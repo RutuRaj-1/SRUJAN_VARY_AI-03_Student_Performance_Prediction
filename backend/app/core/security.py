@@ -121,6 +121,10 @@ class CurrentUser:
     def is_active(self) -> bool:
         return self.account_status == AccountStatus.ACTIVE
 
+    @property
+    def id(self) -> str:
+        return self.user_id
+
 
 def decode_and_verify_supabase_jwt(token: str) -> dict:
     """

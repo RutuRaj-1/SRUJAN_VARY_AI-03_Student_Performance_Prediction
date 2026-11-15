@@ -147,13 +147,18 @@ To prevent tight coupling and tangled dependencies across the seven modules, MAS
 
 ---
 
-### Module 07: Industry & Placement Readiness Intelligence
-- **Purpose:** Evaluating technical capabilities against verified industry job profiles.
+### Module 07/08: Career Readiness & Industry Skill Gap Intelligence (Implemented & Verified — Phase 09)
+- **Purpose:** Connect verified academic learning evidence and practical engineering projects to curated professional role benchmarks through transparent, non-aggregated intelligence.
 - **Responsibilities:**
-  - Role competency framework curation (e.g. Backend Engineer, Data Analyst, Cloud DevOps).
-  - Student target role selection and goal tracking.
-  - Practical competency evaluations (system design, algorithmic code, database schemas).
-  - External engineering evidence verification (GitHub repos, commit frequency, project complexity).
-  - Skill-gap radar analytics and placement readiness indices.
-- **Dependencies:** Module 02 (`competency_mappings`), Module 04 (`foundational_mastery`), External verification connectors.
-- **Shared With Other Modules:** Operates independently of internal marks to provide an unpolluted industry readiness signal.
+  - Curate versioned industry role profiles (`industry_role_profiles`) with competency depth requirements (`industry_competency_requirements`).
+  - Human-in-the-loop mapping review governance enforcing that only faculty-approved mappings (`APPROVED`) influence authoritative scoring.
+  - Student practical project evidence submission and faculty verification ledger (`student_project_evidence`).
+  - Unified competency evidence synthesis (`student_competency_evidence`) across continuous topic mastery, coding assessments, and verified projects.
+  - Deterministic, role-specific readiness evaluations with core and practical coverage percentages (`career_readiness_analyses`).
+  - 5-tier categorized industry skill gap discovery: Demonstrated Gap, Practical Evidence Gap, Curriculum Gap, Evidence Gap, Mapping Gap (`career_skill_gap_findings`).
+  - Actionable career development roadmaps (`career_development_recommendations`) decoupled from formal academic remediation.
+  - Defense-in-depth Placement Officer firewall: Placement Officers access career profiles for placement matching, with zero access to Phase 07 risk data or Phase 08 confidential interventions.
+- **Dependencies:** AI Syllabus Intelligence (Phase 03 competencies and roles), Academic Data & Assessment Engine (Phase 04/05 records and attempts), Learning Mastery Analytics (Phase 06 topic mastery).
+- **Shared With Other Modules:** Provides unpolluted industry readiness and practical portfolio evidence to Placement Officers and students.
+- **Invariant:** Never compresses student capability into an arbitrary composite employability percentage. Missing evidence is never conflated with incompetence. Placement Officer quarantine strictly preserved.
+

@@ -437,3 +437,77 @@ Base URL: `/api/v1/interventions`
 - `GET /api/v1/interventions/dashboard/student`
   - **Access:** `STUDENT`
   - **Description:** Personalized student workspace with assigned actions checklist.
+
+---
+
+## 9. Module 08: Career Readiness & Industry Skill Gap Intelligence Contracts (Phase 09)
+
+### 9.1 Role Profiles & Requirements
+- `GET /api/v1/career-readiness/roles`
+  - **Access:** All authenticated users (`STUDENT`, `FACULTY`, `ADMIN`, `PLACEMENT_OFFICER`)
+  - **Query:** `include_inactive` (boolean)
+  - **Description:** Lists permitted career role profiles with requirements.
+- `GET /api/v1/career-readiness/roles/{role_id}`
+  - **Access:** All authenticated users
+  - **Description:** Detailed role profile with required competencies, Bloom depth levels, and importance tiers.
+- `POST /api/v1/career-readiness/roles`
+  - **Access:** `FACULTY`, `INSTITUTION_ADMIN`, `SUPER_ADMIN`
+  - **Payload:** `IndustryRoleProfileCreate`
+  - **Description:** Create an institutional role benchmark.
+- `PUT /api/v1/career-readiness/roles/{role_id}`
+  - **Access:** `FACULTY`, `INSTITUTION_ADMIN`, `SUPER_ADMIN`
+  - **Payload:** `IndustryRoleProfileUpdate`
+  - **Description:** Update role benchmark details or version.
+- `POST /api/v1/career-readiness/roles/{role_id}/requirements`
+  - **Access:** `FACULTY`, `INSTITUTION_ADMIN`, `SUPER_ADMIN`
+  - **Payload:** `IndustryCompetencyRequirementCreate`
+  - **Description:** Add benchmark competency requirement.
+
+### 9.2 Practical Project Evidence
+- `GET /api/v1/career-readiness/projects`
+  - **Access:** `STUDENT` (Self), `FACULTY`, `ADMIN`, `PLACEMENT_OFFICER` (Verified only)
+  - **Query:** `student_id` (required for staff/placement)
+  - **Description:** List student practical engineering projects.
+- `POST /api/v1/career-readiness/projects`
+  - **Access:** `STUDENT`, `FACULTY` (on-behalf)
+  - **Payload:** `StudentProjectEvidenceCreate` (`title`, `description`, `technology_stack`, `repository_url`, `portfolio_url`, `demonstrated_competencies`)
+  - **Description:** Submit project evidence for faculty verification.
+- `PUT /api/v1/career-readiness/projects/{project_id}`
+  - **Access:** `STUDENT` (Owner only, prior to verification)
+  - **Payload:** `StudentProjectEvidenceUpdate`
+  - **Description:** Edit submitted project details.
+- `POST /api/v1/career-readiness/projects/{project_id}/review`
+  - **Access:** `FACULTY`, `INSTITUTION_ADMIN`, `SUPER_ADMIN`
+  - **Payload:** `StudentProjectEvidenceReview` (`verification_status`: "VERIFIED" | "REJECTED", `verification_notes`)
+  - **Description:** Faculty verification of practical projects registering verified competency credit.
+
+### 9.3 Competency Evidence Ledger
+- `GET /api/v1/career-readiness/evidence`
+  - **Access:** `STUDENT` (Self), `FACULTY`, `ADMIN`, `PLACEMENT_OFFICER`
+  - **Query:** `student_id`
+  - **Description:** Traceable ledger of student competencies across exams, topic mastery, and verified projects.
+
+### 9.4 Readiness Analysis & Role Comparison
+- `POST /api/v1/career-readiness/analyze`
+  - **Access:** `STUDENT` (Self), `FACULTY`, `ADMIN`, `PLACEMENT_OFFICER`
+  - **Payload:** `CareerReadinessAnalysisRequest` (`role_id`, `student_id`, `force_recalculate`)
+  - **Description:** Deterministic role readiness analysis with core/practical coverage and non-aggregation disclaimer.
+- `GET /api/v1/career-readiness/compare`
+  - **Access:** `STUDENT` (Self), `FACULTY`, `ADMIN`, `PLACEMENT_OFFICER`
+  - **Query:** `student_id`, `role_ids`
+  - **Description:** Side-by-side comparison of student standing across multiple career roles.
+- `GET /api/v1/career-readiness/overview`
+  - **Access:** `STUDENT` (Self), `FACULTY`, `ADMIN`
+  - **Query:** `student_id`
+  - **Description:** Aggregated workspace metrics (enrolled roles, demonstrated skills, active gaps).
+
+### 9.5 Recommendations
+- `GET /api/v1/career-readiness/recommendations`
+  - **Access:** `STUDENT` (Self), `FACULTY`, `ADMIN`, `PLACEMENT_OFFICER`
+  - **Query:** `student_id`, `role_id`
+  - **Description:** List personalized skill gap development roadmaps.
+- `PATCH /api/v1/career-readiness/recommendations/{recommendation_id}`
+  - **Access:** Authenticated (`STUDENT` updates status/notes; `FACULTY` adds feedback)
+  - **Payload:** `CareerDevelopmentRecommendationUpdate`
+  - **Description:** Track roadmap execution.
+

@@ -951,5 +951,128 @@ CREATE TABLE intervention_outcome_observations (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 ```
+
+---
+
+## 10. Module 08: Career Readiness & Industry Skill Gap Intelligence Schema (Phase 09)
+
+### `student_project_evidence`
+```sql
+CREATE TABLE student_project_evidence (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    institution_id UUID NOT NULL REFERENCES institutions(id) ON DELETE CASCADE,
+    student_id UUID NOT NULL REFERENCES student_academic_profiles(id) ON DELETE CASCADE,
+    title VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    technology_stack JSONB NOT NULL DEFAULT '[]'::jsonb,
+    repository_url VARCHAR(512),
+    portfolio_url VARCHAR(512),
+    documentation_url VARCHAR(512),
+    demonstrated_competencies JSONB NOT NULL DEFAULT '[]'::jsonb,
+    verification_status VARCHAR(50) NOT NULL DEFAULT 'PENDING_REVIEW',
+    reviewer_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
+    reviewed_at TIMESTAMPTZ,
+    verification_notes TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
 ```
+
+### `student_competency_evidence`
+```sql
+CREATE TABLE student_competency_evidence (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    institution_id UUID NOT NULL REFERENCES institutions(id) ON DELETE CASCADE,
+    student_id UUID NOT NULL REFERENCES student_academic_profiles(id) ON DELETE CASCADE,
+    competency_id UUID REFERENCES competencies(id) ON DELETE SET NULL,
+    competency_name VARCHAR(255) NOT NULL,
+    category VARCHAR(50) NOT NULL DEFAULT 'PROGRAMMING',
+    evidence_type VARCHAR(50) NOT NULL DEFAULT 'THEORETICAL_ASSESSMENT',
+    source_entity_type VARCHAR(50) NOT NULL,
+    source_entity_id UUID,
+    evidence_state VARCHAR(50) NOT NULL DEFAULT 'NOT_ASSESSED',
+    score_or_metric FLOAT,
+    evidence_summary TEXT NOT NULL,
+    provenance_details JSONB DEFAULT '{}'::jsonb,
+    verified_by UUID REFERENCES profiles(id) ON DELETE SET NULL,
+    verified_at TIMESTAMPTZ,
+    is_eligible BOOLEAN NOT NULL DEFAULT true,
+    exclusion_reason VARCHAR(255),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
 ```
+
+### `career_readiness_analyses`
+```sql
+CREATE TABLE career_readiness_analyses (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    institution_id UUID NOT NULL REFERENCES institutions(id) ON DELETE CASCADE,
+    student_id UUID NOT NULL REFERENCES student_academic_profiles(id) ON DELETE CASCADE,
+    role_id UUID NOT NULL REFERENCES industry_role_profiles(id) ON DELETE CASCADE,
+    alignment_status VARCHAR(50) NOT NULL DEFAULT 'INSUFFICIENT_EVIDENCE',
+    total_requirements_count INTEGER NOT NULL DEFAULT 0,
+    demonstrated_count INTEGER NOT NULL DEFAULT 0,
+    developing_count INTEGER NOT NULL DEFAULT 0,
+    insufficient_evidence_count INTEGER NOT NULL DEFAULT 0,
+    not_assessed_count INTEGER NOT NULL DEFAULT 0,
+    review_required_count INTEGER NOT NULL DEFAULT 0,
+    core_competency_coverage FLOAT NOT NULL DEFAULT 0.0,
+    practical_evidence_coverage FLOAT NOT NULL DEFAULT 0.0,
+    faculty_reviewed_count INTEGER NOT NULL DEFAULT 0,
+    summary_rationale TEXT NOT NULL,
+    disclaimer TEXT NOT NULL,
+    analysis_version VARCHAR(50) NOT NULL DEFAULT 'v1.0-deterministic',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+### `career_skill_gap_findings`
+```sql
+CREATE TABLE career_skill_gap_findings (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    analysis_id UUID NOT NULL REFERENCES career_readiness_analyses(id) ON DELETE CASCADE,
+    institution_id UUID NOT NULL REFERENCES institutions(id) ON DELETE CASCADE,
+    student_id UUID NOT NULL REFERENCES student_academic_profiles(id) ON DELETE CASCADE,
+    role_id UUID NOT NULL REFERENCES industry_role_profiles(id) ON DELETE CASCADE,
+    requirement_id UUID REFERENCES industry_competency_requirements(id) ON DELETE SET NULL,
+    competency_name VARCHAR(255) NOT NULL,
+    importance VARCHAR(50) NOT NULL DEFAULT 'CORE',
+    gap_type VARCHAR(50) NOT NULL DEFAULT 'DEMONSTRATED_GAP',
+    current_evidence_state VARCHAR(50) NOT NULL DEFAULT 'NOT_ASSESSED',
+    gap_severity VARCHAR(50) NOT NULL DEFAULT 'MODERATE',
+    rationale TEXT NOT NULL,
+    suggested_action TEXT NOT NULL,
+    evidence_needed TEXT NOT NULL,
+    related_subject_id UUID REFERENCES academic_subjects(id) ON DELETE SET NULL,
+    related_learning_outcome_id UUID REFERENCES learning_outcomes(id) ON DELETE SET NULL,
+    status VARCHAR(50) NOT NULL DEFAULT 'ACTIVE',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+### `career_development_recommendations`
+```sql
+CREATE TABLE career_development_recommendations (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    analysis_id UUID REFERENCES career_readiness_analyses(id) ON DELETE SET NULL,
+    gap_id UUID REFERENCES career_skill_gap_findings(id) ON DELETE SET NULL,
+    institution_id UUID NOT NULL REFERENCES institutions(id) ON DELETE CASCADE,
+    student_id UUID NOT NULL REFERENCES student_academic_profiles(id) ON DELETE CASCADE,
+    role_id UUID NOT NULL REFERENCES industry_role_profiles(id) ON DELETE CASCADE,
+    title VARCHAR(255) NOT NULL,
+    target_competency VARCHAR(255) NOT NULL,
+    recommendation_type VARCHAR(50) NOT NULL DEFAULT 'PRACTICAL_PROJECT',
+    priority VARCHAR(50) NOT NULL DEFAULT 'HIGH',
+    status VARCHAR(50) NOT NULL DEFAULT 'PROPOSED',
+    action_plan TEXT NOT NULL,
+    expected_evidence TEXT NOT NULL,
+    estimated_duration_days INTEGER NOT NULL DEFAULT 14,
+    academic_intervention_plan_id UUID REFERENCES academic_intervention_plans(id) ON DELETE SET NULL,
+    student_notes TEXT,
+    reviewer_feedback TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+

@@ -193,14 +193,19 @@ class IndustryRoleProfile(Base):
     __tablename__ = "industry_role_profiles"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    institution_id = Column(UUID(as_uuid=True), ForeignKey("institutions.id", ondelete="CASCADE"), nullable=True, index=True)
     role_title = Column(String(255), nullable=False, index=True)
     role_family = Column(String(100), nullable=False, index=True)
     description = Column(Text, nullable=False)
     experience_tier = Column(String(50), nullable=False, default="Entry-Level / Fresher")
+    version = Column(String(50), nullable=False, default="1.0")
+    is_active = Column(Boolean, nullable=False, default=True)
+    review_status = Column(String(50), nullable=False, default="APPROVED")
     created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
     updated_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now())
 
     # Relationships
+    institution = relationship("Institution")
     requirements = relationship("IndustryCompetencyRequirement", back_populates="role", cascade="all, delete-orphan")
     gap_analyses = relationship("CurriculumGapAnalysis", back_populates="role", cascade="all, delete-orphan")
 
@@ -210,15 +215,20 @@ class IndustryCompetencyRequirement(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     role_id = Column(UUID(as_uuid=True), ForeignKey("industry_role_profiles.id", ondelete="CASCADE"), nullable=False, index=True)
+    competency_id = Column(UUID(as_uuid=True), ForeignKey("competencies.id", ondelete="SET NULL"), nullable=True, index=True)
     competency_name = Column(String(255), nullable=False)
     category = Column(String(50), nullable=False, default=CompetencyCategory.PROGRAMMING.value)
     required_depth = Column(Integer, nullable=False, default=3)
     importance = Column(String(50), nullable=False, default=IndustryImportance.HIGH.value)
+    mapping_status = Column(String(50), nullable=False, default="APPROVED")
+    source_reference = Column(String(255), nullable=True)
+    rationale = Column(Text, nullable=True)
     description = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     # Relationships
     role = relationship("IndustryRoleProfile", back_populates="requirements")
+    academic_competency = relationship("Competency")
     gap_analyses = relationship("CurriculumGapAnalysis", back_populates="industry_competency", cascade="all, delete-orphan")
 
 

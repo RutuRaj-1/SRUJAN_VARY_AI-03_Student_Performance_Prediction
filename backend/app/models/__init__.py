@@ -47,6 +47,16 @@ from app.models.enums import (
     InterventionActionStatus,
     InterventionRecommendationStatus,
     InterventionEventType,
+    CompetencyEvidenceState,
+    CompetencyEvidenceType,
+    CareerAlignmentStatus,
+    CareerSkillGapType,
+    CareerGapSeverity,
+    CareerRecommendationType,
+    CareerRecommendationStatus,
+    ProjectVerificationStatus,
+    RoleRequirementImportance,
+    RoleMappingStatus,
 )
 from app.models.institution import Institution, InstitutionMembership
 from app.models.profile import Profile
@@ -112,6 +122,15 @@ from app.models.interventions import (
     InterventionOutcomeObservation,
     DEFAULT_INTERVENTION_DISCLAIMER,
 )
+from app.models.career import (
+    StudentProjectEvidence,
+    StudentCompetencyEvidence,
+    CareerReadinessAnalysis,
+    CareerSkillGapFinding,
+    CareerDevelopmentRecommendation,
+    DEFAULT_CAREER_READINESS_DISCLAIMER,
+)
+
 
 __all__ = [
     "UserRole",
@@ -215,4 +234,20 @@ __all__ = [
     "InterventionProgressEvent",
     "InterventionOutcomeObservation",
     "DEFAULT_INTERVENTION_DISCLAIMER",
+    "CompetencyEvidenceState",
+    "CompetencyEvidenceType",
+    "CareerAlignmentStatus",
+    "CareerSkillGapType",
+    "CareerGapSeverity",
+    "CareerRecommendationType",
+    "CareerRecommendationStatus",
+    "ProjectVerificationStatus",
+    "RoleRequirementImportance",
+    "RoleMappingStatus",
+    "StudentProjectEvidence",
+    "StudentCompetencyEvidence",
+    "CareerReadinessAnalysis",
+    "CareerSkillGapFinding",
+    "CareerDevelopmentRecommendation",
+    "DEFAULT_CAREER_READINESS_DISCLAIMER",
 ]

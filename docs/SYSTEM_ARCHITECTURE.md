@@ -159,3 +159,17 @@ MASTERY delegates user identity management to **Supabase Auth** while retaining 
 - **Granular Action Tasks & Append-Only Progress Audit**: Actionable tasks (`academic_intervention_actions`) with instructions, effort estimates, student submission links, and faculty verification. All status changes log immutable events in `intervention_progress_events`.
 - **Non-Causal Observational Follow-Up**: Subsequent assessment outcomes are recorded as empirical observations (`intervention_outcome_observations`) without unsupported causal claims.
 - **Placement Officer Quarantine (§ 4.2)**: Placement Officers are strictly barred from all intervention data to eliminate recruitment bias.
+
+---
+
+## 11. Module 08: Career Readiness & Industry Skill Gap Intelligence Architecture (Phase 09)
+
+- **Curated Role Competency Benchmarks**: Standardized professional profiles (`industry_role_profiles`) with versioned competency requirements (`industry_competency_requirements`) calibrated against Bloom's depth levels (1–5) and priority tiers (`CORE`, `IMPORTANT`, `SUPPORTING`, `OPTIONAL`).
+- **Human-in-the-Loop Mapping Governance**: Enforces that only faculty-approved mappings (`APPROVED`) influence student readiness scoring; unreviewed AI suggestions (`AI_SUGGESTED`) trigger `MAPPING_GAP` findings.
+- **Multi-Modal Evidence Synthesis**: Integrates verified continuous topic masteries (Phase 06), coding evaluations (Phase 05), and student practical projects with explicit evidence states (`DEMONSTRATED`, `DEVELOPING`, `NOT_YET_DEMONSTRATED`, `NOT_ASSESSED`, `INSUFFICIENT_EVIDENCE`).
+- **Practical Project Verification Protocol**: Dedicated student portfolio submission (`student_project_evidence`) requiring faculty verification before practical credit is registered in the evidence ledger.
+- **Deterministic Non-Aggregated Readiness Engine**: Role-specific alignment evaluation generating core and practical coverage percentages rather than an arbitrary single employability score.
+- **Categorized Industry Skill Gap Discovery**: 5-tier classification distinguishing Demonstrated Gaps, Practical Evidence Gaps, Curriculum Gaps, Evidence Gaps, and Mapping Gaps.
+- **Decoupled Career Development Roadmaps**: Voluntary, student-directed development plans (`career_development_recommendations`) with optional links to Phase 08 academic interventions.
+- **Placement Officer Firewall**: Placement Officers access career profiles and verified projects for role-matching, while remaining strictly quarantined from academic risk predictions and confidential interventions.
+
