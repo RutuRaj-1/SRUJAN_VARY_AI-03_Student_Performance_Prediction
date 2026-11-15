@@ -111,3 +111,15 @@ MASTERY delegates user identity management to **Supabase Auth** while retaining 
 - **Non-Numeric Truth Preservation**: Explicit differentiation between academic assessment failure and non-demonstration (`ABSENT`, `NOT_SUBMITTED`, `EXEMPTED`) to eliminate zero-fill skew in downstream intelligence.
 - **Deterministic Quality Intelligence**: Real-time heuristic scanning flagging orphaned records, extreme grade variances, and attendance-performance discrepancies.
 - **Immutable Audit Trail**: Changes to student academic records, marks, and attendance are permanently tracked in `academic_record_audits` with actor ID, timestamp, and mandatory justification.
+
+---
+
+## 7. Module 04: Intelligent Assessment & Attentiveness Engine Architecture (Phase 05)
+
+- **Curriculum-Linked Question Bank**: Multi-modal item authoring (`MCQ`, `MULTI_SELECT`, `TRUE_FALSE`, `SHORT_ANSWER`, `LONG_ANSWER`, `CODE_RESPONSE`) linked to syllabus units, topics, Bloom's taxonomy tiers, and competencies.
+- **Secure Online Delivery Architecture**: Scheduled assessment windows, strict duration limits, client-side countdown timer, and server-side deadline enforcement.
+- **Answer Key Security Boundary**: Correct answer keys (`is_correct`, `expected_answer`) are stored server-side and completely stripped from student attempt delivery payloads.
+- **Autosave & Revision Tracking**: Candidate responses are autosaved on input/selection change with atomic `revision_count` incrementing to eliminate race conditions and submission collisions.
+- **Deterministic Auto-Grading & Faculty Rubrics**: Instant automated scoring for objective items; faculty evaluation queue with rubric-based scoring and feedback for subjective/coding responses.
+- **Phase 04 Official Gradebook Integration**: Faculty verification writes verified assessment records to `student_assessment_records` with immutable audit logging in `academic_record_audits`. Practice tests (`PRACTICE_TEST`) are strictly barred from gradebooks.
+- **Observable Interaction Telemetry**: Captures transparent, non-invasive events (`ASSESSMENT_STARTED`, `ANSWER_SAVED`, `ANSWER_REVISED`, `ASSESSMENT_SUBMITTED`) governed by mandatory scientific non-attention disclaimers. Zero biometric or covert surveillance.

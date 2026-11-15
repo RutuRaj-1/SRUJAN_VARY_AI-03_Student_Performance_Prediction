@@ -16,6 +16,14 @@ from app.models.enums import (
     DataQualitySeverity,
     ImportCategory,
     ImportJobStatus,
+    QuestionType,
+    QuestionDifficulty,
+    QuestionEvaluationMethod,
+    AttemptStatus,
+    ResponseEvaluationStatus,
+    LearningEngagementEventType,
+    AssessmentOnlineStatus,
+    AssessmentEvaluationMode,
 )
 from app.models.institution import Institution, InstitutionMembership
 from app.models.profile import Profile
@@ -44,6 +52,18 @@ from app.models.academic_data import (
     AcademicDataQualityFinding,
     AcademicRecordAudit,
 )
+from app.models.assessment import (
+    AssessmentQuestion,
+    AssessmentQuestionOption,
+    AssessmentQuestionMapping,
+    AssessmentLearningOutcomeMapping,
+    AssessmentAttempt,
+    AssessmentResponse,
+    AssessmentRubric,
+    AssessmentRubricCriteria,
+    AssessmentRubricEvaluation,
+    LearningEngagementEvent,
+)
 
 __all__ = [
     "UserRole",
@@ -63,6 +83,14 @@ __all__ = [
     "DataQualitySeverity",
     "ImportCategory",
     "ImportJobStatus",
+    "QuestionType",
+    "QuestionDifficulty",
+    "QuestionEvaluationMethod",
+    "AttemptStatus",
+    "ResponseEvaluationStatus",
+    "LearningEngagementEventType",
+    "AssessmentOnlineStatus",
+    "AssessmentEvaluationMode",
     "Institution",
     "InstitutionMembership",
     "Profile",
@@ -87,4 +115,14 @@ __all__ = [
     "AcademicImportError",
     "AcademicDataQualityFinding",
     "AcademicRecordAudit",
+    "AssessmentQuestion",
+    "AssessmentQuestionOption",
+    "AssessmentQuestionMapping",
+    "AssessmentLearningOutcomeMapping",
+    "AssessmentAttempt",
+    "AssessmentResponse",
+    "AssessmentRubric",
+    "AssessmentRubricCriteria",
+    "AssessmentRubricEvaluation",
+    "LearningEngagementEvent",
 ]

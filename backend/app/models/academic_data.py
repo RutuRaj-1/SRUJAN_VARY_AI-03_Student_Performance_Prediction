@@ -107,6 +107,14 @@ class AcademicAssessment(Base):
     weightage_percentage = Column(Float, nullable=True)
     assessment_date = Column(DateTime(timezone=True), nullable=True)
     description = Column(Text, nullable=True)
+    instructions = Column(Text, nullable=True)
+    is_online_assessment = Column(Boolean, nullable=False, default=False)
+    duration_minutes = Column(Integer, nullable=True)
+    start_time = Column(DateTime(timezone=True), nullable=True)
+    end_time = Column(DateTime(timezone=True), nullable=True)
+    evaluation_mode = Column(String(50), nullable=False, default="HYBRID")
+    attempt_limit = Column(Integer, nullable=False, default=1)
+    allow_review = Column(Boolean, nullable=False, default=True)
     created_by = Column(UUID(as_uuid=True), ForeignKey("profiles.id", ondelete="SET NULL"), nullable=True)
     status = Column(String(50), nullable=False, default="SCHEDULED")
 
@@ -122,6 +130,10 @@ class AcademicAssessment(Base):
     subject = relationship("AcademicSubject")
     creator = relationship("Profile")
     records = relationship("StudentAssessmentRecord", back_populates="assessment", cascade="all, delete-orphan")
+    question_mappings = relationship("AssessmentQuestionMapping", back_populates="assessment", cascade="all, delete-orphan", order_by="AssessmentQuestionMapping.display_order")
+    outcome_mappings = relationship("AssessmentLearningOutcomeMapping", back_populates="assessment", cascade="all, delete-orphan")
+    attempts = relationship("AssessmentAttempt", back_populates="assessment", cascade="all, delete-orphan")
+    rubrics = relationship("AssessmentRubric", back_populates="assessment", cascade="all, delete-orphan")
 
 
 class StudentAssessmentRecord(Base):

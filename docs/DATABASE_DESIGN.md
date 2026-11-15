@@ -415,3 +415,113 @@ CREATE TABLE student_attendance_records (
 
 ### `academic_import_jobs`, `academic_import_errors`, `academic_data_quality_findings`, `academic_record_audits`
 Supporting tables for batch ingestion, multi-severity data quality analysis, and immutable compliance auditing.
+
+---
+
+## 5. Module 04: Assessment & Engagement Engine Schema (Phase 05)
+
+### `assessment_questions` & `assessment_question_options`
+Curriculum-aligned multi-modal question bank with server-side answer key protection.
+```sql
+CREATE TABLE assessment_questions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    institution_id UUID NOT NULL REFERENCES institutions(id) ON DELETE CASCADE,
+    subject_id UUID NOT NULL REFERENCES academic_subjects(id) ON DELETE CASCADE,
+    syllabus_unit_id UUID REFERENCES syllabus_units(id) ON DELETE SET NULL,
+    syllabus_topic_id UUID REFERENCES syllabus_topics(id) ON DELETE SET NULL,
+    learning_outcome_id UUID REFERENCES learning_outcomes(id) ON DELETE SET NULL,
+    competency_id UUID REFERENCES competencies(id) ON DELETE SET NULL,
+    question_text TEXT NOT NULL,
+    question_type VARCHAR(50) NOT NULL,
+    difficulty VARCHAR(20) NOT NULL DEFAULT 'MEDIUM',
+    bloom_level VARCHAR(50) NOT NULL DEFAULT 'APPLY',
+    default_marks FLOAT NOT NULL DEFAULT 1.0,
+    evaluation_method VARCHAR(50) NOT NULL DEFAULT 'AUTOMATED_EXACT',
+    explanation TEXT,
+    expected_answer TEXT,
+    code_language VARCHAR(50),
+    code_template TEXT,
+    created_by UUID REFERENCES profiles(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE assessment_question_options (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    question_id UUID NOT NULL REFERENCES assessment_questions(id) ON DELETE CASCADE,
+    option_text TEXT NOT NULL,
+    is_correct BOOLEAN NOT NULL DEFAULT false,
+    display_order INTEGER NOT NULL DEFAULT 1,
+    feedback TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+### `assessment_question_mappings` & `assessment_learning_outcome_mappings`
+Maps questions and learning outcomes to scheduled assessments.
+```sql
+CREATE TABLE assessment_question_mappings (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    assessment_id UUID NOT NULL REFERENCES academic_assessments(id) ON DELETE CASCADE,
+    question_id UUID NOT NULL REFERENCES assessment_questions(id) ON DELETE CASCADE,
+    display_order INTEGER NOT NULL DEFAULT 1,
+    marks_allocated FLOAT NOT NULL DEFAULT 1.0,
+    required BOOLEAN NOT NULL DEFAULT true,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_assessment_question UNIQUE (assessment_id, question_id)
+);
+```
+
+### `assessment_attempts` & `assessment_responses`
+Student test session execution, deadline enforcement, autosave, and revision tracking.
+```sql
+CREATE TABLE assessment_attempts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    institution_id UUID NOT NULL REFERENCES institutions(id) ON DELETE CASCADE,
+    assessment_id UUID NOT NULL REFERENCES academic_assessments(id) ON DELETE CASCADE,
+    student_id UUID NOT NULL REFERENCES student_academic_profiles(id) ON DELETE CASCADE,
+    attempt_number INTEGER NOT NULL DEFAULT 1,
+    attempt_status VARCHAR(50) NOT NULL DEFAULT 'IN_PROGRESS',
+    started_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    submitted_at TIMESTAMPTZ,
+    deadline_at TIMESTAMPTZ,
+    total_marks FLOAT NOT NULL,
+    marks_obtained FLOAT,
+    evaluation_status VARCHAR(50) NOT NULL DEFAULT 'NOT_EVALUATED',
+    evaluator_feedback TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE assessment_responses (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    institution_id UUID NOT NULL REFERENCES institutions(id) ON DELETE CASCADE,
+    attempt_id UUID NOT NULL REFERENCES assessment_attempts(id) ON DELETE CASCADE,
+    question_id UUID NOT NULL REFERENCES assessment_questions(id) ON DELETE CASCADE,
+    response_payload JSONB NOT NULL DEFAULT '{}'::jsonb,
+    marks_awarded FLOAT,
+    feedback TEXT,
+    evaluation_status VARCHAR(50) NOT NULL DEFAULT 'PENDING',
+    is_auto_evaluated BOOLEAN NOT NULL DEFAULT false,
+    revision_count INTEGER NOT NULL DEFAULT 0,
+    saved_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_attempt_question UNIQUE (attempt_id, question_id)
+);
+```
+
+### `learning_engagement_events`
+Non-invasive observable user-system interaction telemetry.
+```sql
+CREATE TABLE learning_engagement_events (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    institution_id UUID NOT NULL REFERENCES institutions(id) ON DELETE CASCADE,
+    student_id UUID NOT NULL REFERENCES student_academic_profiles(id) ON DELETE CASCADE,
+    assessment_id UUID REFERENCES academic_assessments(id) ON DELETE CASCADE,
+    attempt_id UUID REFERENCES assessment_attempts(id) ON DELETE CASCADE,
+    event_type VARCHAR(80) NOT NULL,
+    event_metadata JSONB DEFAULT '{}'::jsonb,
+    occurred_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```

@@ -340,11 +340,18 @@ def get_current_active_user(
     return current_user
 
 
-def require_roles(*allowed_roles: UserRole) -> Callable[[CurrentUser], CurrentUser]:
+def require_roles(*allowed_roles) -> Callable[[CurrentUser], CurrentUser]:
     """Dependency factory checking if current user possesses one of the allowed roles."""
+    flat_roles: List[UserRole] = []
+    for r in allowed_roles:
+        if isinstance(r, (list, tuple, set)):
+            flat_roles.extend(r)
+        else:
+            flat_roles.append(r)
+
     def role_checker(current_user: CurrentUser = Depends(get_current_active_user)) -> CurrentUser:
-        if not current_user.has_role(*allowed_roles):
-            role_names = ", ".join([r.value for r in allowed_roles])
+        if not current_user.has_role(*flat_roles):
+            role_names = ", ".join([r.value if hasattr(r, 'value') else str(r) for r in flat_roles])
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail=f"Access forbidden. This resource requires one of the following roles: [{role_names}]. Current role: {current_user.role.value}",

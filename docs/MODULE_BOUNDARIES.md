@@ -81,15 +81,19 @@ To prevent tight coupling and tangled dependencies across the seven modules, MAS
 
 ---
 
-### Module 03: Continuous Learning & Assessment Engine
-- **Purpose:** Multi-modal formative and summative knowledge evaluation.
+### Module 03: Intelligent Assessment & Attentiveness Engine (Implemented & Verified — Phase 05)
+- **Purpose:** Multi-modal question authoring, scheduled exam delivery, student attempt tracking, rubric evaluation, and observable interaction telemetry.
 - **Responsibilities:**
-  - Curriculum-aligned question banks across difficulty levels.
-  - AI-assisted question generation with faculty approval.
-  - MCQ, descriptive question, and executable coding/SQL challenge delivery.
-  - Assessment attempts, submission tracking, and automated scoring.
-- **Dependencies:** Module 02 (`topics`), Core DB.
-- **Shared With Other Modules:** Streams assessment attempt telemetry and item-level performance scores to Module 04.
+  - Curriculum-aligned question bank (`assessment_questions`, `assessment_question_options`) across 6 question types, difficulty tiers, and Bloom's taxonomy cognitive levels.
+  - Assessment configuration, question mapping, duration limits, and sum-of-marks validation (`academic_assessments`, `assessment_question_mappings`).
+  - Student attempt session lifecycle (`assessment_attempts`), server-side deadline enforcement, and answer autosave with revision tracking (`assessment_responses`).
+  - Server-side answer key protection: `is_correct` and `expected_answer` are never exposed to candidates during attempts.
+  - Deterministic automated grading for objective items (MCQ, Multi-select, True/False) and faculty rubric evaluation for subjective/coding responses.
+  - Phase 04 Official Gradebook integration: verified faculty marks release writes directly to `student_assessment_records` with audit logging in `academic_record_audits`. Practice tests are strictly excluded.
+  - Transparent learning engagement telemetry (`learning_engagement_events`) capturing observable events governed by mandatory scientific non-attention disclaimers. Zero invasive surveillance.
+- **Dependencies:** Module 01 (`student_subject_enrollments`, `academic_assessments`, `student_assessment_records`), Module 02 (`academic_subjects`, `learning_outcomes`, `competencies`), Core DB.
+- **Shared With Other Modules:** Streams verified assessment results, item-level outcome demonstrations, and observable interaction telemetry to Module 04 (Evidence Calibration & Mastery Analytics).
+- **Invariant:** Never outputs final topic mastery percentages, academic risk probabilities, or career readiness ratings. Observes strictly bounded evidence collection.
 
 ---
 

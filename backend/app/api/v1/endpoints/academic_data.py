@@ -34,7 +34,7 @@ from app.services.academic.attendance_service import attendance_service
 from app.services.academic.import_service import import_service
 from app.services.academic.quality_service import quality_service
 from app.services.academic.verification_service import verification_service
-from app.models.academic_data import AcademicImportJob, AcademicImportError
+from app.models.academic_data import AcademicImportJob, AcademicImportError, StudentAssessmentRecord
 
 router = APIRouter()
 
@@ -176,6 +176,22 @@ def record_student_performance(
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Cannot record performance for another institution.")
     recorder_id = uuid.UUID(current_user.user_id) if current_user.user_id else None
     return assessment_service.record_student_performance(db, recorder_id, record_in)
+
+
+@router.get("/performance", response_model=List[StudentAssessmentRecordResponse])
+def query_performance_records(
+    assessment_id: Optional[uuid.UUID] = None,
+    student_id: Optional[uuid.UUID] = None,
+    db: Session = Depends(get_db),
+    current_user: CurrentUser = Depends(get_current_active_user),
+):
+    inst_id = _resolve_institution_id(current_user)
+    query = select(StudentAssessmentRecord).where(StudentAssessmentRecord.institution_id == inst_id)
+    if assessment_id:
+        query = query.where(StudentAssessmentRecord.assessment_id == assessment_id)
+    if student_id:
+        query = query.where(StudentAssessmentRecord.student_id == student_id)
+    return list(db.execute(query).scalars().all())
 
 
 @router.get("/students/{student_id}/performance", response_model=List[StudentAssessmentRecordResponse])

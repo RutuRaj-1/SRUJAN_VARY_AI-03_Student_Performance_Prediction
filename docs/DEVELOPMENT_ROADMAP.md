@@ -17,9 +17,9 @@
 |      v                                                                                |
 |  [PHASE 04]  Module 03: Academic Data Intelligence Hub <-- [COMPLETED]                |
 |      v                                                                                |
-|  [PHASE 05]  Module 04: Intelligent Assessment & Attentiveness Engine <-- [NEXT]      |
+|  [PHASE 05]  Module 04: Intelligent Assessment & Attentiveness Engine <-- [COMPLETED]  |
 |      v                                                                                |
-|  [PHASE 06]  Module 05: Learning Mastery & Performance Analytics                      |
+|  [PHASE 06]  Module 05: Learning Mastery & Performance Analytics <-- [NEXT]           |
 |      v                                                                                |
 |  [PHASE 07]  Module 06: Academic Risk Prediction Engine                               |
 |      v                                                                                |

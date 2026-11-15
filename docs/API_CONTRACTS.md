@@ -229,3 +229,62 @@ Base Route: `/api/v1/academic-data` (also mounted as `/academic`)
   - **Description:** Faculty verification of marks or student profiles with audit trail logging and mandatory change justifications.
 - `GET /api/v1/academic-data/audits`
   - **Description:** Append-only history of changes to academic entities.
+
+---
+
+## 5. Module 04: Assessment & Engagement Engine API Contracts (Phase 05)
+
+### 5.1 Question Bank
+- `POST /api/v1/assessments/questions`
+  - **Permissions:** `SUPER_ADMIN`, `INSTITUTION_ADMIN`, `FACULTY`.
+  - **Payload:** `QuestionCreate` (subject_id, learning_outcome_id, question_text, question_type, difficulty, bloom_level, default_marks, explanation, options).
+  - **Response:** `QuestionDetailResponse`.
+- `GET /api/v1/assessments/questions`
+  - **Query Params:** `subject_id`, `question_type`, `difficulty`.
+  - **Description:** List questions. Faculty/Admin views include `is_correct` answer keys; student views omit them.
+- `GET /api/v1/assessments/questions/{id}`
+  - **Description:** Retrieve detailed question view.
+
+### 5.2 Assessment Session Configuration
+- `POST /api/v1/assessments`
+  - **Permissions:** `SUPER_ADMIN`, `INSTITUTION_ADMIN`, `FACULTY`.
+  - **Payload:** `AssessmentCreate` (subject_id, assessment_name, assessment_type, maximum_marks, passing_marks, duration_minutes, attempt_limit, question_mappings).
+- `GET /api/v1/assessments`
+  - **Query Params:** `subject_id`, `status_filter`.
+  - **Description:** List configured assessments.
+- `GET /api/v1/assessments/{id}`
+  - **Description:** Detailed assessment view with question mappings.
+- `POST /api/v1/assessments/{id}/publish`
+  - **Description:** Validates question marks sum against maximum marks and transitions status from `DRAFT` to `PUBLISHED`.
+- `POST /api/v1/assessments/{id}/close`
+  - **Description:** Closes assessment session (`CLOSED`).
+
+### 5.3 Student Exam Delivery Session
+- `GET /api/v1/assessments/available`
+  - **Permissions:** `STUDENT`, `FACULTY`, `ADMIN`.
+  - **Description:** Returns available online assessments for candidate's active enrolled subjects with attempt quotas and window statuses.
+- `POST /api/v1/assessments/{id}/attempts`
+  - **Description:** Initiates or resumes student attempt session. Returns candidate questions completely sanitized of answer keys (`is_correct`, `expected_answer`).
+- `PUT /api/v1/assessments/attempts/{attempt_id}/responses`
+  - **Payload:** `ResponseSaveRequest` (question_id, response_payload).
+  - **Description:** Autosaves candidate answer, increments `revision_count`, and emits `ANSWER_SAVED` or `ANSWER_REVISED` telemetry.
+- `POST /api/v1/assessments/attempts/{attempt_id}/submit`
+  - **Description:** Finalizes student submission, triggers deterministic auto-grading for objective questions, and sets status to `SUBMITTED` or `EVALUATED`.
+
+### 5.4 Faculty Evaluation & Gradebook Integration
+- `GET /api/v1/assessments/{id}/submissions`
+  - **Description:** Returns submissions queue for faculty grading.
+- `POST /api/v1/assessments/submissions/{attempt_id}/evaluate`
+  - **Payload:** `BatchEvaluationRequest` (evaluations: [{question_id, marks_awarded, feedback}], overall_remarks).
+  - **Description:** Saves faculty marks and feedback for subjective items.
+- `POST /api/v1/assessments/submissions/{attempt_id}/release-result`
+  - **Payload:** `ReleaseResultRequest` (publish_to_official_records, verification_remarks).
+  - **Description:** Writes verified marks to Phase 04 `student_assessment_records` with audit trail logging in `academic_record_audits`. Blocks practice tests from gradebook.
+
+### 5.5 Analytics & Learning Engagement Telemetry
+- `GET /api/v1/assessments/{id}/analytics`
+  - **Description:** Metrics including completion rate, average score, pass rate, score distribution, and learning outcome coverage.
+- `GET /api/v1/assessments/{id}/engagement-summary`
+  - **Description:** Aggregated non-invasive telemetry event breakdown and mandatory scientific non-attention disclaimer.
+- `POST /api/v1/assessments/engagement/events`
+  - **Description:** Ingests client interaction telemetry (`ASSESSMENT_STARTED`, `ANSWER_SAVED`, `ANSWER_REVISED`, `ASSESSMENT_SUBMITTED`, etc.).
