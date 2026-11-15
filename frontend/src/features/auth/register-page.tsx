@@ -55,8 +55,8 @@ export const RegisterPage: React.FC = () => {
     <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
       <div className="max-w-md w-full space-y-6">
         <div className="text-center space-y-2">
-          <div className="inline-flex h-12 w-12 rounded-lg bg-blue-600 text-white items-center justify-center font-bold text-xl shadow-sm">
-            M
+          <div className="inline-flex border-2 border-black rounded-[6px] overflow-hidden bg-white shadow-sm p-1">
+            <img src="/logo.png" alt="MASTERY" className="h-12 w-auto object-contain block" />
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">Student Account Registration</h1>
           <p className="text-xs text-slate-500">Beyond Marks. Towards Mastery.</p>

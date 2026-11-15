@@ -17,19 +17,17 @@ export const Header: React.FC = () => {
     <header className="sticky top-0 z-30 h-14 bg-white border-b border-[#DCE6E2] px-6 flex items-center justify-between shadow-subtle">
       {/* Brand & Wordmark */}
       <div className="flex items-center gap-6">
-        <Link to="/" className="flex items-center gap-2.5 group">
-          <div className="h-8 w-8 rounded-[4px] bg-[#123E40] text-white flex items-center justify-center font-bold text-base tracking-wider shadow-sm group-hover:bg-[#237277] transition-colors">
-            M
+        <Link to="/" className="flex items-center gap-3 group">
+          <div className="h-9 border-2 border-black rounded-[4px] overflow-hidden bg-white shadow-sm flex items-center p-0.5">
+            <img
+              src="/logo.png"
+              alt="MASTERY — Beyond Marks. Towards Mastery."
+              className="h-full w-auto object-contain block"
+            />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-[#172825] tracking-tight text-base font-sans">MASTERY</span>
-              <span className="text-[11px] font-mono text-[#687A75] hidden sm:inline">SRUJAN 2026</span>
-            </div>
-            <p className="text-[11px] text-[#687A75] font-medium leading-none hidden md:block">
-              Beyond Marks. Towards Mastery.
-            </p>
-          </div>
+          <span className="text-[10px] font-mono bg-[#EEF8F7] text-[#123E40] px-1.5 py-0.5 rounded-[2px] border border-[#BDCEC8] font-bold hidden sm:inline">
+            SRUJAN 2026
+          </span>
         </Link>
 
         {/* Global Navigation links */}

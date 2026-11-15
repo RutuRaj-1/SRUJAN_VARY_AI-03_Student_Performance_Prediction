@@ -26,6 +26,16 @@ export const LandingPage: React.FC = () => {
       <section className="relative overflow-hidden bg-white border-b border-slate-200 py-20 lg:py-28">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl">
+            <div className="mb-6">
+              <div className="inline-flex border-2 border-black rounded-[6px] overflow-hidden bg-white shadow-sm p-1">
+                <img
+                  src="/logo.png"
+                  alt="MASTERY — Beyond Marks. Towards Mastery."
+                  className="h-12 sm:h-14 w-auto object-contain block"
+                />
+              </div>
+            </div>
+
             <div className="flex flex-wrap items-center gap-2 mb-6">
               <Badge variant="outline" className="border-primary/30 text-primary font-mono text-xs uppercase tracking-wider">
                 Problem Statement AI-03

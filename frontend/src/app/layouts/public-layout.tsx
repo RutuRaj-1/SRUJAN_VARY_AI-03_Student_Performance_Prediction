@@ -46,20 +46,16 @@ export const PublicLayout: React.FC = () => {
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           {/* Left: Brand */}
           <Link to="/" className="flex items-center gap-3 group">
-            <div className="h-9 w-9 rounded-[4px] bg-[#123E40] text-white flex items-center justify-center font-bold text-lg tracking-wider shadow-sm group-hover:bg-[#237277] transition-colors">
-              M
+            <div className="h-10 border-2 border-black rounded-[4px] overflow-hidden bg-white shadow-sm flex items-center p-0.5">
+              <img
+                src="/logo.png"
+                alt="MASTERY — Beyond Marks. Towards Mastery."
+                className="h-full w-auto object-contain block"
+              />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-lg text-[#172825] tracking-tight font-sans">MASTERY</span>
-                <span className="text-[10px] font-mono bg-[#EEF8F7] text-[#123E40] px-1.5 py-0.5 rounded-[2px] border border-[#BDCEC8]">
-                  SRUJAN 2026
-                </span>
-              </div>
-              <p className="text-[11px] text-[#687A75] font-medium leading-none hidden sm:block">
-                Beyond Marks. Towards Mastery.
-              </p>
-            </div>
+            <span className="text-[10px] font-mono bg-[#EEF8F7] text-[#123E40] px-1.5 py-0.5 rounded-[2px] border border-[#BDCEC8] font-bold hidden sm:inline">
+              SRUJAN 2026
+            </span>
           </Link>
 
           {/* Center: Navigation Links */}
@@ -231,10 +227,13 @@ export const PublicLayout: React.FC = () => {
             {/* Col 1: Platform Info */}
             <div className="space-y-3">
               <div className="flex items-center gap-2">
-                <div className="h-7 w-7 rounded-[3px] bg-[#237277] text-white flex items-center justify-center font-bold text-sm">
-                  M
+                <div className="h-8 border-2 border-black rounded-[4px] overflow-hidden bg-white shadow-sm inline-flex items-center p-0.5">
+                  <img
+                    src="/logo.png"
+                    alt="MASTERY"
+                    className="h-full w-auto object-contain block"
+                  />
                 </div>
-                <span className="font-bold text-white text-base font-sans tracking-tight">MASTERY</span>
               </div>
               <p className="text-slate-400 text-xs leading-relaxed">
                 An evidence-driven student academic performance prediction and mastery intelligence ecosystem.
