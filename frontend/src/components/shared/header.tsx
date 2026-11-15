@@ -1,5 +1,5 @@
 import React from 'react';
-import { LogOut, LogIn, Globe } from 'lucide-react';
+import { LogOut, LogIn, Globe, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/auth-context';
 import { useDemo } from '@/demo/demo-context';
@@ -7,7 +7,7 @@ import { Link, useLocation } from 'react-router-dom';
 
 export const Header: React.FC = () => {
   const { isAuthenticated, profile, role, logout } = useAuth();
-  const { isDemoMode, activeRole } = useDemo();
+  const { isDemoMode, setIsDemoMode, activeRole } = useDemo();
   const location = useLocation();
 
   // Determine current effective role (demo role takes precedence when in demo mode)
@@ -56,6 +56,20 @@ export const Header: React.FC = () => {
 
       {/* Right Controls: Role Indicator, Demo Mode Pill, User Auth */}
       <div className="flex items-center gap-3">
+        {/* Synthetic Data Mode Toggle */}
+        <button
+          onClick={() => setIsDemoMode(!isDemoMode)}
+          className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-[4px] border text-xs font-semibold transition-colors ${
+            isDemoMode
+              ? 'bg-[#D9F0EE] border-[#237277] text-[#123E40]'
+              : 'bg-slate-50 border-slate-300 text-slate-600 hover:bg-slate-100'
+          }`}
+          title="Toggle In-Memory Synthetic Data"
+        >
+          <Sparkles className={`h-3 w-3 ${isDemoMode ? 'text-[#237277]' : 'text-slate-400'}`} />
+          <span>{isDemoMode ? 'Synthetic Data: ON' : 'Synthetic Data: OFF'}</span>
+        </button>
+
         {/* Effective Persona Badge */}
         <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-[4px] bg-[#EEF8F7] border border-[#BDCEC8]">
           <span className="text-[10px] text-[#687A75] uppercase tracking-wider font-semibold">Perspective:</span>

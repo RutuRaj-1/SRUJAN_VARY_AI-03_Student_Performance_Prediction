@@ -2,11 +2,13 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 import { Header } from '@/components/shared/header';
 import { Sidebar } from '@/components/shared/sidebar';
+import { SyntheticDataBar } from '@/components/shared/synthetic-data-bar';
 
 export const RootLayout: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col bg-[#F7FAF9] text-[#172825]">
       <Header />
+      <SyntheticDataBar />
       <div className="flex-1 flex overflow-hidden">
         <Sidebar />
         <main className="flex-1 overflow-y-auto p-6 md:p-8 max-w-7xl mx-auto w-full">

@@ -3,7 +3,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/auth-context';
 import { useDemo } from '@/demo/demo-context';
 import { UserRole } from '@/types/auth';
-import { Clock, LogOut } from 'lucide-react';
+import { Clock, LogOut, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -20,7 +20,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   requireActive = true,
 }) => {
   const { isAuthenticated, isLoading, role: authRole, accountStatus, profile, logout } = useAuth();
-  const { isDemoMode, activeRole } = useDemo();
+  const { isDemoMode, setIsDemoMode, activeRole } = useDemo();
   const location = useLocation();
 
   // If loading live session and not in demo mode
@@ -60,14 +60,25 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
               <Badge variant="outline" className="font-mono text-[10px]">STUDENT</Badge> role.
             </p>
             <div className="p-3 bg-amber-50 border border-amber-200 rounded-[4px] text-amber-900 leading-relaxed">
-              Institutional security policies require your faculty advisor or department administrator to verify and activate your profile before you can access academic ledgers and assessment evaluations.
+              Institutional security policies require your faculty advisor or department administrator to verify and activate your profile before you can access live academic ledgers.
             </div>
-            <div className="flex items-center justify-between pt-2 border-t border-[#DCE6E2]">
-              <span className="text-[#687A75]">Account Status: PENDING</span>
-              <Button variant="outline" size="sm" onClick={() => logout()} className="gap-1.5">
-                <LogOut className="h-3.5 w-3.5" />
-                <span>Sign Out</span>
+            <div className="pt-3 border-t border-[#DCE6E2] space-y-2">
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setIsDemoMode(true)}
+                className="w-full gap-2 bg-[#237277] hover:bg-[#18575A] text-white text-xs font-semibold"
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+                <span>Explore with In-Memory Synthetic Data (No DB Writes)</span>
               </Button>
+              <div className="flex items-center justify-between pt-1">
+                <span className="text-[#687A75]">Account Status: PENDING</span>
+                <Button variant="outline" size="sm" onClick={() => logout()} className="gap-1.5 text-xs">
+                  <LogOut className="h-3.5 w-3.5" />
+                  <span>Sign Out</span>
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
