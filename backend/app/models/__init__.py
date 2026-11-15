@@ -33,6 +33,14 @@ from app.models.enums import (
     AnalysisJobStatus,
     EvidenceEligibilityStatus,
     EvidenceExclusionReason,
+    RiskClassification,
+    RiskModelType,
+    RiskModelStatus,
+    RiskTargetStatus,
+    RiskJobType,
+    RiskJobStatus,
+    RiskPredictionStatus,
+    RiskEvaluationType,
 )
 from app.models.institution import Institution, InstitutionMembership
 from app.models.profile import Profile
@@ -79,6 +87,15 @@ from app.models.mastery import (
     TopicMasteryResult,
     LearningOutcomeAttainmentResult,
     LearningGapFinding,
+)
+from app.models.risk import (
+    AcademicRiskTarget,
+    RiskFeatureSnapshot,
+    RiskModelVersion,
+    RiskModelEvaluation,
+    AcademicRiskPrediction,
+    AcademicRiskPredictionExplanation,
+    RiskPredictionJob,
 )
 
 __all__ = [
@@ -155,4 +172,19 @@ __all__ = [
     "TopicMasteryResult",
     "LearningOutcomeAttainmentResult",
     "LearningGapFinding",
+    "RiskClassification",
+    "RiskModelType",
+    "RiskModelStatus",
+    "RiskTargetStatus",
+    "RiskJobType",
+    "RiskJobStatus",
+    "RiskPredictionStatus",
+    "RiskEvaluationType",
+    "AcademicRiskTarget",
+    "RiskFeatureSnapshot",
+    "RiskModelVersion",
+    "RiskModelEvaluation",
+    "AcademicRiskPrediction",
+    "AcademicRiskPredictionExplanation",
+    "RiskPredictionJob",
 ]

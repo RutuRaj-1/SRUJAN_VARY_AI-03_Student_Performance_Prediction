@@ -114,16 +114,19 @@ To prevent tight coupling and tangled dependencies across the seven modules, MAS
 
 ---
 
-### Module 05: Explainable Academic Risk Prediction
-- **Purpose:** Proactive early identification of students needing academic support.
+### Module 05: Explainable Academic Risk Prediction (Implemented & Verified — Phase 07)
+- **Purpose:** Proactive early identification of students who may experience future academic difficulty using time-bounded, explainable academic evidence.
 - **Responsibilities:**
-  - Multi-factor risk screening combining attendance momentum, test drop-offs, and assessment lag.
-  - Feature engineering pipelines across historical semesters.
-  - Classical ML prediction models (Logistic Regression / Random Forest) trained solely on validated institutional data.
-  - Generates explainable risk alerts detailing top contributory risk drivers.
-  - Enforces faculty review checkpoints before dispatching notifications.
-- **Dependencies:** Module 01 (`attendance`, `internal_marks`), Module 04 (`topic_mastery`), ML Service (`app.services.ml`).
-- **Shared With Other Modules:** Triggers intervention workflows in Module 06.
+  - Multi-factor risk target modeling framework (`academic_risk_targets`) with configurable institutional thresholds and prediction horizons.
+  - Strict temporal slicing and anti-leakage validation engine (`leakage_validator.py`, `risk_feature_snapshots`).
+  - Standardized 12-dimensional numerical feature store incorporating continuous assessment averages, trajectories, topic mastery ratios, and verified attendance rates.
+  - Target variable quarantine preventing final exam marks from entering predictive feature vectors.
+  - Dual-model hierarchy: L2-regularized Logistic Regression and Decision Tree with Dataset Readiness Gates, auto-falling back to deterministic expert rules when training data is insufficient.
+  - Grounded explainability engine decomposing predictions into directional adverse risk factors and protective factors with verified evidence provenance traces.
+  - Supabase Row-Level Security and FastAPI RBAC enforcing complete student self-isolation and strict Placement Officer firewall (§ 4.2).
+- **Dependencies:** Academic Data Intelligence Hub (Phase 04 attendance and assessment records), Intelligent Assessment Engine (Phase 05 attempts), Learning Mastery & Performance Analytics (Phase 06 topic mastery and gap findings).
+- **Shared With Other Modules:** Exposes time-bounded risk classifications and adverse factor attributions to Module 06 (Personalized Interventions).
+- **Invariant:** Never combines risk probabilities with career readiness or mastery into an aggregate student score. Never uses demographic variables, biometrics, or invasive eye-gaze tracking. Observes strict non-stigmatization scientific governance.
 
 ---
 

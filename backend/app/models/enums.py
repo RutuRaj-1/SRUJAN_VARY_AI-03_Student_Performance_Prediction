@@ -282,3 +282,61 @@ class EvidenceExclusionReason(str, Enum):
     EXEMPTED_RECORD = "EXEMPTED_RECORD"
 
 
+# =========================================================================
+# Phase 07: Academic Risk Prediction Enums
+# =========================================================================
+
+class RiskClassification(str, Enum):
+    LOW = "LOW"
+    MODERATE = "MODERATE"
+    HIGH = "HIGH"
+    INSUFFICIENT_EVIDENCE = "INSUFFICIENT_EVIDENCE"
+    NOT_ASSESSED = "NOT_ASSESSED"
+    MODEL_NOT_READY = "MODEL_NOT_READY"
+
+
+class RiskModelType(str, Enum):
+    LOGISTIC_REGRESSION = "LOGISTIC_REGRESSION"
+    DECISION_TREE = "DECISION_TREE"
+    DETERMINISTIC_RULES = "DETERMINISTIC_RULES"
+
+
+class RiskModelStatus(str, Enum):
+    TRAINED = "TRAINED"
+    DEPLOYED = "DEPLOYED"
+    RETIRED = "RETIRED"
+    MODEL_NOT_READY = "MODEL_NOT_READY"
+
+
+class RiskTargetStatus(str, Enum):
+    ACTIVE = "ACTIVE"
+    NOT_CONFIGURED = "NOT_CONFIGURED"
+    DEPRECATED = "DEPRECATED"
+
+
+class RiskJobType(str, Enum):
+    BATCH_PREDICTION = "BATCH_PREDICTION"
+    MODEL_TRAINING = "MODEL_TRAINING"
+    DATASET_VALIDATION = "DATASET_VALIDATION"
+
+
+class RiskJobStatus(str, Enum):
+    PENDING = "PENDING"
+    RUNNING = "RUNNING"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+
+
+class RiskPredictionStatus(str, Enum):
+    ACTIVE = "ACTIVE"
+    SUPERSEDED = "SUPERSEDED"
+    DISPUTED = "DISPUTED"
+
+
+class RiskEvaluationType(str, Enum):
+    TEMPORAL_VALIDATION = "TEMPORAL_VALIDATION"
+    CROSS_VALIDATION = "CROSS_VALIDATION"
+    HOLDOUT_TEST = "HOLDOUT_TEST"
+
+
+
