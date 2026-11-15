@@ -7,7 +7,6 @@ import {
   CheckCircle2,
   Award,
   AlertTriangle,
-  Compass,
   Briefcase,
   ChevronLeft,
   ChevronRight,
@@ -33,11 +32,6 @@ const mainNav: NavItem[] = [
     name: 'Unified Dashboard',
     path: '/app/dashboard',
     icon: LayoutDashboard,
-  },
-  {
-    name: 'Demo Walkthrough',
-    path: '/demo-guide',
-    icon: Compass,
   },
 ];
 

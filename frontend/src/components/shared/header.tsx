@@ -1,5 +1,5 @@
 import React from 'react';
-import { LogOut, LogIn, Globe, Compass } from 'lucide-react';
+import { LogOut, LogIn, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/auth-context';
 import { useDemo } from '@/demo/demo-context';
@@ -50,13 +50,6 @@ export const Header: React.FC = () => {
             }`}
           >
             <span>Workspace</span>
-          </Link>
-          <Link
-            to="/demo-guide"
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-[4px] hover:bg-[#EEF8F7] hover:text-[#123E40] transition-colors"
-          >
-            <Compass className="h-3.5 w-3.5 text-[#237277]" />
-            <span>Demo Walkthrough</span>
           </Link>
         </nav>
       </div>
