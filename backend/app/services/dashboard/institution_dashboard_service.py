@@ -6,7 +6,7 @@ intervention lifecycles, and career competency readiness.
 """
 
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
@@ -249,7 +249,7 @@ class InstitutionDashboardService:
         )
 
         freshness = DataFreshnessInfo(
-            last_updated_at=datetime.utcnow(),
+            last_updated_at=datetime.now(timezone.utc),
             source_module="Unified Dashboard Integration Layer",
             freshness_status="FRESH",
             is_snapshot=False,

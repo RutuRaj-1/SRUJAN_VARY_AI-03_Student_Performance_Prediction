@@ -35,7 +35,7 @@ def make_test_token(
             "role": role,
         },
     }
-    return jwt.encode(payload, "test-secret-key-mastery", algorithm="HS256")
+    return jwt.encode(payload, "test-secret-key-mastery-phase-11-audit-key-32b", algorithm="HS256")
 
 
 def test_unauthenticated_access_me(client: TestClient):

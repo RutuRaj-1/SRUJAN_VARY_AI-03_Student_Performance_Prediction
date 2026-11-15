@@ -7,7 +7,7 @@ and Confidential Academic Interventions (Module 07).
 """
 
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, List
 from collections import Counter
 from sqlalchemy.orm import Session
@@ -114,7 +114,7 @@ class PlacementDashboardService:
         ]
 
         freshness = DataFreshnessInfo(
-            last_updated_at=datetime.utcnow(),
+            last_updated_at=datetime.now(timezone.utc),
             source_module="Module 08: Career Readiness & Industry Skill Gap Intelligence",
             freshness_status="FRESH",
             is_snapshot=False,

@@ -6,7 +6,7 @@ Preserves data provenance and ensures missing data is never converted to zero.
 """
 
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, List
 from sqlalchemy.orm import Session
 from sqlalchemy import func
@@ -83,7 +83,7 @@ class StudentDashboardService:
                 detail="Student academic profile not found for the requested context."
             )
 
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
 
         # 2. Institution and Program details
         inst = db.query(Institution).filter(Institution.id == student.institution_id).first()

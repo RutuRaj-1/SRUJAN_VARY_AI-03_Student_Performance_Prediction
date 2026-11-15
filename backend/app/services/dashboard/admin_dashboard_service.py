@@ -4,7 +4,7 @@ Provides multi-tenant operational visibility, module subsystem health,
 database latency, migration state, and tenant user distributions.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from collections import Counter
 from typing import Dict
 from sqlalchemy.orm import Session
@@ -65,7 +65,7 @@ class AdminDashboardService:
         }
 
         freshness = DataFreshnessInfo(
-            last_updated_at=datetime.utcnow(),
+            last_updated_at=datetime.now(timezone.utc),
             source_module="Platform Operations & Diagnostics",
             freshness_status="FRESH",
             is_snapshot=False,

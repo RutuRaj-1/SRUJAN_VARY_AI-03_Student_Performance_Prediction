@@ -6,7 +6,7 @@ early academic risk indicators, and intervention review queues.
 """
 
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, List
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
@@ -208,7 +208,7 @@ class FacultyDashboardService:
         )
 
         freshness = DataFreshnessInfo(
-            last_updated_at=datetime.utcnow(),
+            last_updated_at=datetime.now(timezone.utc),
             source_module="Unified Dashboard Integration Layer",
             freshness_status="FRESH",
             is_snapshot=False,
