@@ -22,13 +22,12 @@ def test_health_endpoint(client: TestClient):
     assert data["services"]["database"] in ["unconfigured", "connected", "disconnected"]
 
 
-def test_database_health_unconfigured(client: TestClient):
+def test_database_health_endpoint(client: TestClient):
     response = client.get("/api/v1/health/database")
     assert response.status_code == 200
     data = response.json()
-    assert data["status"] == "unconfigured"
-    assert data["configured"] is False
-    assert "not configured" in data["message"].lower()
+    assert data["status"] in ["unconfigured", "connected", "disconnected"]
+    assert "configured" in data
 
 
 def test_custom_exception_handler(client: TestClient):

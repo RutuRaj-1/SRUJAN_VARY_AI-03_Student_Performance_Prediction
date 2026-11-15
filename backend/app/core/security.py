@@ -234,8 +234,15 @@ def get_current_user(
             profile = db.query(Profile).filter(Profile.id == parsed_uuid).first()
 
             # Automatic fallback provisioning if profile does not exist in DB yet
+            meta = payload.get("user_metadata", {})
+            inst_id = None
+            if meta.get("institution_id"):
+                try:
+                    inst_id = uuid.UUID(meta["institution_id"])
+                except (ValueError, TypeError):
+                    pass
+
             if not profile:
-                meta = payload.get("user_metadata", {})
                 full_name = meta.get("full_name") or email.split("@")[0]
                 status_str = meta.get("account_status", AccountStatus.PENDING.value)
                 role_str = meta.get("role", UserRole.STUDENT.value)
@@ -245,11 +252,27 @@ def get_current_user(
                     email=email,
                     role=role_str,
                     account_status=status_str,
+                    institution_id=inst_id,
                 )
                 db.add(profile)
                 db.commit()
                 db.refresh(profile)
                 logger.info("Auto-provisioned profile for user %s (%s)", user_id, email)
+            else:
+                # Sync metadata updates if present
+                updated = False
+                if meta.get("account_status") and profile.account_status != meta.get("account_status"):
+                    profile.account_status = meta["account_status"]
+                    updated = True
+                if meta.get("role") and profile.role != meta.get("role"):
+                    profile.role = meta["role"]
+                    updated = True
+                if inst_id and profile.institution_id != inst_id:
+                    profile.institution_id = inst_id
+                    updated = True
+                if updated:
+                    db.commit()
+                    db.refresh(profile)
         except Exception as exc:
             logger.warning("Database profile lookup error for user %s: %s", user_id, exc)
             if db:

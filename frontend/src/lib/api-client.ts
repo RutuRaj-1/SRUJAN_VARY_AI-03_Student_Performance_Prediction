@@ -30,10 +30,18 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     // If Supabase session fails to load, continue without auth header
   }
 
-  const headers: HeadersInit = {
-    'Content-Type': 'application/json',
+  const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;
+
+  const defaultHeaders: Record<string, string> = {
     Accept: 'application/json',
     ...authHeader,
+  };
+  if (!isFormData) {
+    defaultHeaders['Content-Type'] = 'application/json';
+  }
+
+  const headers: HeadersInit = {
+    ...defaultHeaders,
     ...options.headers,
   };
 

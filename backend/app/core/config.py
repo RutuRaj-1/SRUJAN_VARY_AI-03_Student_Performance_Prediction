@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     Does not require any external secrets to be present to boot up.
     """
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=(".env", "backend/.env", "../backend/.env"),
         env_file_encoding="utf-8",
         case_sensitive=True,
         extra="ignore",

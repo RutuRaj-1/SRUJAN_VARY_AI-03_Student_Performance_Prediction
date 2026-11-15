@@ -51,6 +51,10 @@ dist-ssr/
 .idea/
 *.swp
 *.swo
+
+# Local uploads & temporary storage
+backend/uploads/
+uploads/
 .DS_Store
 Thumbs.db
 

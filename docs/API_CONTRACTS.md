@@ -114,3 +114,35 @@ Tokens are validated via the Supabase project's JWKS endpoint (`ES256`).
   "membership_role": "STUDENT"
 }
 ```
+
+
+---
+
+## 3. Module 02: AI Syllabus & Competency Intelligence Endpoints (Phase 03)
+
+### 3.1 Academic Programs & Subjects
+- `POST /api/v1/syllabus/programs` — Create academic degree program (`SUPER_ADMIN`, `INSTITUTION_ADMIN`, `FACULTY`)
+- `GET /api/v1/syllabus/programs` — List programs for caller's institution
+- `POST /api/v1/syllabus/subjects` — Create academic course/subject (`SUPER_ADMIN`, `INSTITUTION_ADMIN`, `FACULTY`)
+- `GET /api/v1/syllabus/subjects` — List subjects with optional `program_id` filtering
+- `GET /api/v1/syllabus/subjects/{id}` — Get subject details, credits, hours, and prerequisites
+
+### 3.2 Syllabus Document Ingestion & Processing
+- `POST /api/v1/syllabus/upload` — Multipart form-data upload for PDF, DOCX, TXT syllabus documents
+- `POST /api/v1/syllabus/documents/{id}/process` — Trigger PyMuPDF extraction, AI curriculum structuring, competency categorization, and gap analysis
+- `GET /api/v1/syllabus/documents` — List uploaded documents for caller's institution
+- `GET /api/v1/syllabus/documents/{id}` — Get document extraction details and hierarchical units
+
+### 3.3 Curriculum Exploration & Competencies
+- `GET /api/v1/syllabus/subjects/{id}/structure` — Get structured curriculum tree: units, estimated hours, topics, and Bloom's learning outcomes
+- `GET /api/v1/syllabus/subjects/{id}/competencies` — Get competencies classified across Theoretical, Programming, Tools/Technologies, Analytical, Practical with depth (1-5) and syllabus evidence
+
+### 3.4 Industry Alignment & Gap Analysis
+- `GET /api/v1/syllabus/industry-roles` — List benchmark technical roles (Backend SDE, Full-Stack, Data Engineer, ML Engineer, DevOps) and requirements
+- `GET /api/v1/syllabus/subjects/{id}/gap-analysis` — Get curriculum gap analysis summaries, coverage percentages, and explainable recommendations
+
+### 3.5 Faculty Review & Modification Workspace
+- `POST /api/v1/syllabus/documents/{id}/review` — Approve, reject, or request revisions on curriculum document with comments
+- `GET /api/v1/syllabus/documents/{id}/history` — Audit trail log displaying all reviews, unit edits, and topic modifications
+- `PATCH /api/v1/syllabus/units/{id}` — Faculty edit unit title, estimated hours, and description
+- `PATCH /api/v1/syllabus/topics/{id}` — Faculty edit topic name and subtopics
