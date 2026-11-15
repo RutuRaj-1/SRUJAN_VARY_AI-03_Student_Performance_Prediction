@@ -123,3 +123,16 @@ MASTERY delegates user identity management to **Supabase Auth** while retaining 
 - **Deterministic Auto-Grading & Faculty Rubrics**: Instant automated scoring for objective items; faculty evaluation queue with rubric-based scoring and feedback for subjective/coding responses.
 - **Phase 04 Official Gradebook Integration**: Faculty verification writes verified assessment records to `student_assessment_records` with immutable audit logging in `academic_record_audits`. Practice tests (`PRACTICE_TEST`) are strictly barred from gradebooks.
 - **Observable Interaction Telemetry**: Captures transparent, non-invasive events (`ASSESSMENT_STARTED`, `ANSWER_SAVED`, `ANSWER_REVISED`, `ASSESSMENT_SUBMITTED`) governed by mandatory scientific non-attention disclaimers. Zero biometric or covert surveillance.
+
+---
+
+## 8. Module 05: Learning Mastery & Performance Analytics Architecture (Phase 06)
+
+- **Deterministic Evidence Eligibility & Exclusion**: Rigorous gateway ingesting candidate evidence from question responses, attempt totals, and imported transcripts. Rejects contaminated records with explicit exclusion reasons (`PRACTICE_MODE_UNSELECTED`, `DUPLICATE_SUPERSEDED`, `UNVERIFIED_DATA`, `ZERO_MAXIMUM_MARKS`).
+- **Anti-Double-Counting Guard**: Strict hierarchy where question-level responses supersede aggregate test scores, secured by unique database constraints.
+- **Explainable Topic Mastery Calculation**: Evaluates weighted normalized percentages, computes statistical sufficiency (`INSUFFICIENT`, `LIMITED`, `MODERATE`, `STRONG`) and confidence categories (`LOW`, `MEDIUM`, `HIGH`), and assigns mastery statuses (`MASTERED`, `PROGRESSING`, `NEEDS_ATTENTION`, `INSUFFICIENT_EVIDENCE`).
+- **Explicit Null Preservation**: Unassessed topics and outcomes are explicitly preserved as `NULL` performance values rather than defaulting to `0%`.
+- **Course Learning Outcome Attainment**: Aggregates CLO-mapped evidence against institutional threshold targets without distorting unassessed outcomes.
+- **Learning Gap Discovery**: Discovers curriculum vulnerabilities, distinguishing low-performance deficits (`PERSISTENT_LOW_SCORE`) from unassessed curriculum gaps (`UNASSESSED_CRITICAL_TOPIC`).
+- **Longitudinal Progressions & Bloom's Radar**: Chronological tracking of assessment events paired with 6-level Bloom's Revised Taxonomy cognitive distribution.
+- **Mandatory Scientific Governance Non-Mastery Disclaimer**: Hardcoded disclaimers embedded across all schemas, API responses, and user interface panels prohibiting the conflation of assessment performance with internal student intellect.

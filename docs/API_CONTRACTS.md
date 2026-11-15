@@ -288,3 +288,36 @@ Base Route: `/api/v1/academic-data` (also mounted as `/academic`)
   - **Description:** Aggregated non-invasive telemetry event breakdown and mandatory scientific non-attention disclaimer.
 - `POST /api/v1/assessments/engagement/events`
   - **Description:** Ingests client interaction telemetry (`ASSESSMENT_STARTED`, `ANSWER_SAVED`, `ANSWER_REVISED`, `ASSESSMENT_SUBMITTED`, etc.).
+
+---
+
+## 6. Module 05: Learning Mastery & Performance Analytics API
+
+Base URL: `/api/v1/mastery`
+
+### 6.1 Analysis Jobs
+- `POST /api/v1/mastery/jobs/trigger`
+  - **Access:** `SUPER_ADMIN`, `INSTITUTION_ADMIN`, `FACULTY`
+  - **Payload:** `MasteryJobTriggerRequest` (`subject_id`, `target_student_id`, `job_type`, `include_practice`, `min_evidence_threshold`)
+  - **Description:** Ingests eligible assessment/gradebook evidence and recalculates topic mastery and outcome attainment.
+
+### 6.2 Student Mastery Intelligence
+- `GET /api/v1/mastery/students/{student_id}/subjects/{subject_id}/profile`
+  - **Access:** `SUPER_ADMIN`, `INSTITUTION_ADMIN`, `FACULTY`, `STUDENT` (Self only)
+  - **Description:** Returns overall demonstrated mastery, topic list with sufficiency badges, CLO attainment, and identified learning gaps.
+- `GET /api/v1/mastery/students/{student_id}/subjects/{subject_id}/trends`
+  - **Access:** `SUPER_ADMIN`, `INSTITUTION_ADMIN`, `FACULTY`, `STUDENT` (Self only)
+  - **Description:** Chronological progression of assessment scores and 6-level Bloom's Revised Taxonomy cognitive radar.
+
+### 6.3 Cohort Intelligence
+- `GET /api/v1/mastery/cohort/subjects/{subject_id}/summary`
+  - **Access:** `SUPER_ADMIN`, `INSTITUTION_ADMIN`, `FACULTY`
+  - **Description:** Cohort-wide enrollment analytics, curriculum coverage percentage, and topic aggregate performance.
+
+### 6.4 Evidence Auditing & Traceability
+- `GET /api/v1/mastery/topics/{result_id}/evidence`
+  - **Access:** `SUPER_ADMIN`, `INSTITUTION_ADMIN`, `FACULTY`, `STUDENT` (Self only)
+  - **Description:** Itemized list of contributing evidence records with marks, weights, and cognitive tiers.
+- `GET /api/v1/mastery/topics/{result_id}/excluded-evidence`
+  - **Access:** `SUPER_ADMIN`, `INSTITUTION_ADMIN`, `FACULTY`, `STUDENT` (Self only)
+  - **Description:** Audited list of excluded candidate records with deterministic exclusion reason codes.

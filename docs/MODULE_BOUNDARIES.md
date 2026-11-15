@@ -97,16 +97,20 @@ To prevent tight coupling and tangled dependencies across the seven modules, MAS
 
 ---
 
-### Module 04: Evidence Calibration & Student Mastery Analytics
-- **Purpose:** Triangulating demonstrated understanding and detecting evidence discrepancies.
+### Module 04: Learning Mastery & Performance Analytics (Implemented & Verified — Phase 06)
+- **Purpose:** Evidence-based topic mastery, learning outcome attainment, and explainable performance intelligence.
 - **Responsibilities:**
-  - Calibrates student understanding by synthesizing internal marks with independent assessments.
-  - Computes demonstrated topic-level mastery percentages (0–100%).
-  - Maintains evidence provenance (which test, date, confidence weight).
-  - Flags evidence mismatches (e.g., student scored 95% in internal exam but 20% on conceptual/coding probe).
-  - Produces student and cohort mastery heatmaps against syllabus outcomes.
-- **Dependencies:** Module 01 (`academic_records`), Module 02 (`topics`), Module 03 (`assessment_attempts`).
-- **Shared With Other Modules:** Feeds calibrated mastery vectors into Module 05 (Risk) and Module 07 (Career Readiness).
+  - Deterministic evidence eligibility and exclusion engine preventing contaminated or duplicate inputs (`mastery_evidence_records`).
+  - Precedence-based anti-double-counting guard preferring question-level granular responses over attempt aggregates.
+  - Normalized topic mastery score calculation with instrument weighting, statistical sufficiency tiers, and confidence categories (`topic_mastery_results`).
+  - Explicit `NULL` preservation for unassessed curriculum topics (never defaulting to 0%).
+  - Course Learning Outcome (CLO) attainment aggregation against institutional target thresholds (`learning_outcome_attainment_results`).
+  - Learning gap discovery distinguishing performance deficits (`PERSISTENT_LOW_SCORE`) from missing assessments (`UNASSESSED_CRITICAL_TOPIC`).
+  - Longitudinal performance timelines and 6-level Bloom's Revised Taxonomy cognitive radar.
+  - Mandatory scientific governance non-mastery disclaimer enforcement across all layers.
+- **Dependencies:** Academic Data Intelligence Hub (Phase 04 records), Intelligent Assessment Engine (Phase 05 attempts and responses), Syllabus Intelligence (Phase 03 topics and CLOs).
+- **Shared With Other Modules:** Exposes calibrated topic mastery vectors and learning gap findings to Module 05 (Academic Risk Prediction) and Module 07 (Placement Readiness).
+- **Invariant:** Never computes student failure probabilities, dropout risks, career readiness ratings, or infers mastery from attendance/telemetry. Observes strictly bounded evidence evaluation.
 
 ---
 

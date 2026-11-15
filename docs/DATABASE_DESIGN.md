@@ -525,3 +525,131 @@ CREATE TABLE learning_engagement_events (
     occurred_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 ```
+
+---
+
+## 9. Module 05: Learning Mastery & Performance Analytics Tables (Phase 06)
+
+### `mastery_analysis_jobs`
+Tracks recalculation jobs, batch parameters, performance execution runtimes, and status.
+```sql
+CREATE TABLE mastery_analysis_jobs (
+    id VARCHAR(36) PRIMARY KEY,
+    institution_id VARCHAR(36) NOT NULL REFERENCES institutions(id) ON DELETE CASCADE,
+    subject_id VARCHAR(36) NOT NULL REFERENCES academic_subjects(id) ON DELETE CASCADE,
+    triggered_by_profile_id VARCHAR(36) REFERENCES profiles(id) ON DELETE SET NULL,
+    job_type VARCHAR(50) NOT NULL DEFAULT 'FULL_SUBJECT_RECALCULATION',
+    target_student_id VARCHAR(36) REFERENCES student_academic_profiles(id) ON DELETE CASCADE,
+    status VARCHAR(30) NOT NULL DEFAULT 'PENDING',
+    parameters_json JSONB NOT NULL DEFAULT '{}'::jsonb,
+    records_processed INTEGER NOT NULL DEFAULT 0,
+    evidence_included_count INTEGER NOT NULL DEFAULT 0,
+    evidence_excluded_count INTEGER NOT NULL DEFAULT 0,
+    error_details TEXT,
+    started_at TIMESTAMPTZ,
+    completed_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+### `mastery_evidence_records`
+Granular, immutable evidence with inclusion/exclusion audit reasons.
+```sql
+CREATE TABLE mastery_evidence_records (
+    id VARCHAR(36) PRIMARY KEY,
+    institution_id VARCHAR(36) NOT NULL REFERENCES institutions(id) ON DELETE CASCADE,
+    job_id VARCHAR(36) REFERENCES mastery_analysis_jobs(id) ON DELETE SET NULL,
+    student_id VARCHAR(36) NOT NULL REFERENCES student_academic_profiles(id) ON DELETE CASCADE,
+    subject_id VARCHAR(36) NOT NULL REFERENCES academic_subjects(id) ON DELETE CASCADE,
+    topic_id VARCHAR(36) REFERENCES syllabus_topics(id) ON DELETE SET NULL,
+    outcome_id VARCHAR(36) REFERENCES learning_outcomes(id) ON DELETE SET NULL,
+    source_type VARCHAR(50) NOT NULL,
+    source_attempt_id VARCHAR(36) REFERENCES assessment_attempts(id) ON DELETE SET NULL,
+    source_response_id VARCHAR(36) REFERENCES assessment_responses(id) ON DELETE SET NULL,
+    source_performance_id VARCHAR(36) REFERENCES student_assessment_performances(id) ON DELETE SET NULL,
+    marks_obtained NUMERIC(6, 2) NOT NULL,
+    marks_possible NUMERIC(6, 2) NOT NULL,
+    normalized_percentage NUMERIC(5, 2) NOT NULL,
+    weight NUMERIC(4, 2) NOT NULL DEFAULT 1.0,
+    assessment_type VARCHAR(50) NOT NULL,
+    bloom_level VARCHAR(50),
+    attempt_timestamp TIMESTAMPTZ NOT NULL,
+    eligibility_status VARCHAR(30) NOT NULL DEFAULT 'INCLUDED',
+    exclusion_reason VARCHAR(50),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_mastery_evidence_source UNIQUE (student_id, source_type, source_response_id, source_performance_id)
+);
+```
+
+### `topic_mastery_results`
+Calculated topic performance, sufficiency levels, and confidence tiers.
+```sql
+CREATE TABLE topic_mastery_results (
+    id VARCHAR(36) PRIMARY KEY,
+    institution_id VARCHAR(36) NOT NULL REFERENCES institutions(id) ON DELETE CASCADE,
+    job_id VARCHAR(36) REFERENCES mastery_analysis_jobs(id) ON DELETE SET NULL,
+    student_id VARCHAR(36) NOT NULL REFERENCES student_academic_profiles(id) ON DELETE CASCADE,
+    subject_id VARCHAR(36) NOT NULL REFERENCES academic_subjects(id) ON DELETE CASCADE,
+    topic_id VARCHAR(36) NOT NULL REFERENCES syllabus_topics(id) ON DELETE CASCADE,
+    demonstrated_percentage NUMERIC(5, 2),
+    raw_points_earned NUMERIC(8, 2) NOT NULL DEFAULT 0.0,
+    raw_points_possible NUMERIC(8, 2) NOT NULL DEFAULT 0.0,
+    evidence_count INTEGER NOT NULL DEFAULT 0,
+    distinct_assessment_types_count INTEGER NOT NULL DEFAULT 0,
+    sufficiency_level VARCHAR(30) NOT NULL DEFAULT 'INSUFFICIENT',
+    confidence_category VARCHAR(30) NOT NULL DEFAULT 'LOW',
+    mastery_status VARCHAR(30) NOT NULL DEFAULT 'INSUFFICIENT_EVIDENCE',
+    first_evaluated_at TIMESTAMPTZ,
+    last_evaluated_at TIMESTAMPTZ,
+    bloom_level_distribution_json JSONB NOT NULL DEFAULT '{}'::jsonb,
+    scientific_disclaimer TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_student_subject_topic_mastery UNIQUE (student_id, subject_id, topic_id)
+);
+```
+
+### `learning_outcome_attainment_results`
+Course Learning Outcome attainment measured against institutional target thresholds.
+```sql
+CREATE TABLE learning_outcome_attainment_results (
+    id VARCHAR(36) PRIMARY KEY,
+    institution_id VARCHAR(36) NOT NULL REFERENCES institutions(id) ON DELETE CASCADE,
+    job_id VARCHAR(36) REFERENCES mastery_analysis_jobs(id) ON DELETE SET NULL,
+    student_id VARCHAR(36) NOT NULL REFERENCES student_academic_profiles(id) ON DELETE CASCADE,
+    subject_id VARCHAR(36) NOT NULL REFERENCES academic_subjects(id) ON DELETE CASCADE,
+    outcome_id VARCHAR(36) NOT NULL REFERENCES learning_outcomes(id) ON DELETE CASCADE,
+    attainment_percentage NUMERIC(5, 2),
+    evidence_count INTEGER NOT NULL DEFAULT 0,
+    attainment_status VARCHAR(30) NOT NULL DEFAULT 'INSUFFICIENT_EVIDENCE',
+    threshold_percentage NUMERIC(5, 2) NOT NULL DEFAULT 60.0,
+    scientific_disclaimer TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_student_outcome_attainment UNIQUE (student_id, outcome_id)
+);
+```
+
+### `learning_gap_findings`
+Identified curriculum gaps, separating low scores from unassessed topics.
+```sql
+CREATE TABLE learning_gap_findings (
+    id VARCHAR(36) PRIMARY KEY,
+    institution_id VARCHAR(36) NOT NULL REFERENCES institutions(id) ON DELETE CASCADE,
+    job_id VARCHAR(36) REFERENCES mastery_analysis_jobs(id) ON DELETE SET NULL,
+    student_id VARCHAR(36) NOT NULL REFERENCES student_academic_profiles(id) ON DELETE CASCADE,
+    subject_id VARCHAR(36) NOT NULL REFERENCES academic_subjects(id) ON DELETE CASCADE,
+    topic_id VARCHAR(36) REFERENCES syllabus_topics(id) ON DELETE SET NULL,
+    outcome_id VARCHAR(36) REFERENCES learning_outcomes(id) ON DELETE SET NULL,
+    gap_type VARCHAR(50) NOT NULL,
+    severity VARCHAR(30) NOT NULL DEFAULT 'MEDIUM',
+    observed_percentage NUMERIC(5, 2),
+    description TEXT NOT NULL,
+    supporting_evidence_json JSONB NOT NULL DEFAULT '{}'::jsonb,
+    is_resolved BOOLEAN NOT NULL DEFAULT false,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```

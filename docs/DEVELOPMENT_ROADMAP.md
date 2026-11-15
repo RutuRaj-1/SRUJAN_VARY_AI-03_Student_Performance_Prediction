@@ -19,9 +19,9 @@
 |      v                                                                                |
 |  [PHASE 05]  Module 04: Intelligent Assessment & Attentiveness Engine <-- [COMPLETED]  |
 |      v                                                                                |
-|  [PHASE 06]  Module 05: Learning Mastery & Performance Analytics <-- [NEXT]           |
+|  [PHASE 06]  Module 05: Learning Mastery & Performance Analytics <-- [COMPLETED]      |
 |      v                                                                                |
-|  [PHASE 07]  Module 06: Academic Risk Prediction Engine                               |
+|  [PHASE 07]  Module 06: Academic Risk Prediction Engine <-- [NEXT]                    |
 |      v                                                                                |
 |  [PHASE 08]  Module 07: Industry & Placement Readiness Intelligence                   |
 |      v                                                                                |

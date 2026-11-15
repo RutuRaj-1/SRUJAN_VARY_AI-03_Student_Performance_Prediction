@@ -1,5 +1,14 @@
 from fastapi import APIRouter
-from app.api.v1.endpoints import health, auth, users, institutions, syllabus, academic_data, assessments
+from app.api.v1.endpoints import (
+    health,
+    auth,
+    users,
+    institutions,
+    syllabus,
+    academic_data,
+    assessments,
+    mastery,
+)
 
 api_router = APIRouter()
 
@@ -20,6 +29,9 @@ api_router.include_router(academic_data.router, prefix="/academic", tags=["Modul
 
 # Module 04: Intelligent Assessment & Attentiveness Engine (Phase 05)
 api_router.include_router(assessments.router, prefix="/assessments", tags=["Module 04: Assessment & Attentiveness Engine"])
+
+# Module 05: Learning Mastery & Performance Analytics (Phase 06)
+api_router.include_router(mastery.router, prefix="/mastery", tags=["Module 05: Learning Mastery & Performance Analytics"])
 
 # Domain router hooks (Phase 03 - Phase 08 will register endpoints here)
 # - Module 01: Academic Data Intelligence Hub (/academic)

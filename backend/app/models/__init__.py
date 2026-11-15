@@ -24,6 +24,15 @@ from app.models.enums import (
     LearningEngagementEventType,
     AssessmentOnlineStatus,
     AssessmentEvaluationMode,
+    EvidenceSufficiencyLevel,
+    ConfidenceCategory,
+    MasteryStatus,
+    AttainmentStatus,
+    LearningGapType,
+    LearningGapSeverity,
+    AnalysisJobStatus,
+    EvidenceEligibilityStatus,
+    EvidenceExclusionReason,
 )
 from app.models.institution import Institution, InstitutionMembership
 from app.models.profile import Profile
@@ -64,6 +73,13 @@ from app.models.assessment import (
     AssessmentRubricEvaluation,
     LearningEngagementEvent,
 )
+from app.models.mastery import (
+    MasteryAnalysisJob,
+    MasteryEvidenceRecord,
+    TopicMasteryResult,
+    LearningOutcomeAttainmentResult,
+    LearningGapFinding,
+)
 
 __all__ = [
     "UserRole",
@@ -91,6 +107,15 @@ __all__ = [
     "LearningEngagementEventType",
     "AssessmentOnlineStatus",
     "AssessmentEvaluationMode",
+    "EvidenceSufficiencyLevel",
+    "ConfidenceCategory",
+    "MasteryStatus",
+    "AttainmentStatus",
+    "LearningGapType",
+    "LearningGapSeverity",
+    "AnalysisJobStatus",
+    "EvidenceEligibilityStatus",
+    "EvidenceExclusionReason",
     "Institution",
     "InstitutionMembership",
     "Profile",
@@ -125,4 +150,9 @@ __all__ = [
     "AssessmentRubricCriteria",
     "AssessmentRubricEvaluation",
     "LearningEngagementEvent",
+    "MasteryAnalysisJob",
+    "MasteryEvidenceRecord",
+    "TopicMasteryResult",
+    "LearningOutcomeAttainmentResult",
+    "LearningGapFinding",
 ]
