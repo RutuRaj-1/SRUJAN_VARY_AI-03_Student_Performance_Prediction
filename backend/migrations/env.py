@@ -12,6 +12,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 from app.core.config import get_settings
 from app.db.base import Base
+import app.models  # Register all models with Base.metadata
 
 config = context.config
 
@@ -23,7 +24,9 @@ settings = get_settings()
 if settings.DATABASE_URL:
     db_url = settings.DATABASE_URL
     if db_url.startswith("postgres://"):
-        db_url = db_url.replace("postgres://", "postgresql://", 1)
+        db_url = db_url.replace("postgres://", "postgresql+psycopg://", 1)
+    elif db_url.startswith("postgresql://") and "+psycopg" not in db_url:
+        db_url = db_url.replace("postgresql://", "postgresql+psycopg://", 1)
     config.set_main_option("sqlalchemy.url", db_url)
 
 target_metadata = Base.metadata

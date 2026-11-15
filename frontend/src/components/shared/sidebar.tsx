@@ -12,13 +12,15 @@ import {
   Activity,
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
+import { useAuth } from '@/context/auth-context';
+import { UserRole } from '@/types/auth';
 
 interface NavItem {
   name: string;
   path: string;
   icon: React.ElementType;
   badge?: string;
-  badgeVariant?: 'default' | 'info' | 'warning';
+  allowedRoles?: UserRole[];
 }
 
 const mainNav: NavItem[] = [
@@ -35,42 +37,49 @@ const moduleNav: NavItem[] = [
     path: '/academic-data',
     icon: Database,
     badge: 'Phase 02',
+    allowedRoles: ['STUDENT', 'FACULTY', 'INSTITUTION_ADMIN', 'SUPER_ADMIN'],
   },
   {
     name: 'Syllabus & Competency',
     path: '/syllabus',
     icon: FileText,
     badge: 'Phase 03',
+    allowedRoles: ['STUDENT', 'FACULTY', 'INSTITUTION_ADMIN', 'SUPER_ADMIN'],
   },
   {
     name: 'Assessment Engine',
     path: '/assessments',
     icon: CheckCircle2,
     badge: 'Phase 04',
+    allowedRoles: ['STUDENT', 'FACULTY', 'INSTITUTION_ADMIN', 'SUPER_ADMIN'],
   },
   {
     name: 'Mastery Analytics',
     path: '/mastery',
     icon: Award,
     badge: 'Phase 05',
+    allowedRoles: ['STUDENT', 'FACULTY', 'PLACEMENT_OFFICER', 'INSTITUTION_ADMIN', 'SUPER_ADMIN'],
   },
   {
     name: 'Academic Risk Engine',
     path: '/academic-risk',
     icon: AlertTriangle,
     badge: 'Phase 06',
+    allowedRoles: ['FACULTY', 'INSTITUTION_ADMIN', 'SUPER_ADMIN'],
   },
   {
     name: 'Interventions & Growth',
     path: '/interventions',
     icon: Compass,
     badge: 'Phase 07',
+    allowedRoles: ['STUDENT', 'FACULTY', 'INSTITUTION_ADMIN', 'SUPER_ADMIN'],
   },
   {
-    name: 'Career & Industry Readiness',
+    name: 'Career & Placement',
     path: '/career-readiness',
     icon: Briefcase,
     badge: 'Phase 08',
+    allowedRoles: ['STUDENT', 'PLACEMENT_OFFICER', 'FACULTY', 'INSTITUTION_ADMIN', 'SUPER_ADMIN'],
   },
 ];
 
@@ -79,10 +88,22 @@ const systemNav: NavItem[] = [
     name: 'System Diagnostics',
     path: '/diagnostics',
     icon: Activity,
+    allowedRoles: ['SUPER_ADMIN', 'INSTITUTION_ADMIN'],
   },
 ];
 
 export const Sidebar: React.FC = () => {
+  const { role } = useAuth();
+
+  const isAllowed = (item: NavItem): boolean => {
+    if (!item.allowedRoles || item.allowedRoles.length === 0) return true;
+    if (role === 'SUPER_ADMIN') return true;
+    return item.allowedRoles.includes(role);
+  };
+
+  const visibleModules = moduleNav.filter(isAllowed);
+  const visibleSystem = systemNav.filter(isAllowed);
+
   return (
     <aside className="w-64 bg-slate-900 text-slate-300 flex flex-col shrink-0 min-h-[calc(100vh-4rem)] border-r border-slate-800">
       <div className="flex-1 py-4 px-3 space-y-6 overflow-y-auto">
@@ -113,14 +134,16 @@ export const Sidebar: React.FC = () => {
           </div>
         </div>
 
-        {/* 7 Modules Nav */}
+        {/* 7 Modules Nav (Filtered by role) */}
         <div>
           <div className="px-3 mb-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wider flex items-center justify-between">
             <span>Product Domains</span>
-            <span className="text-[10px] text-slate-400 font-mono">7 Modules</span>
+            <span className="text-[10px] text-slate-400 font-mono">
+              {visibleModules.length} Modules
+            </span>
           </div>
           <div className="space-y-1">
-            {moduleNav.map((item) => (
+            {visibleModules.map((item) => (
               <NavLink
                 key={item.path}
                 to={item.path}
@@ -147,37 +170,39 @@ export const Sidebar: React.FC = () => {
           </div>
         </div>
 
-        {/* System & Architecture */}
-        <div>
-          <div className="px-3 mb-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-            Infrastructure
+        {/* System & Architecture (Admins only) */}
+        {visibleSystem.length > 0 && (
+          <div>
+            <div className="px-3 mb-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+              Administration
+            </div>
+            <div className="space-y-1">
+              {visibleSystem.map((item) => (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  className={({ isActive }) =>
+                    cn(
+                      'flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                      isActive
+                        ? 'bg-slate-800 text-white'
+                        : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                    )
+                  }
+                >
+                  <item.icon className="h-4 w-4 shrink-0 text-slate-400" />
+                  <span>{item.name}</span>
+                </NavLink>
+              ))}
+            </div>
           </div>
-          <div className="space-y-1">
-            {systemNav.map((item) => (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                className={({ isActive }) =>
-                  cn(
-                    'flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
-                    isActive
-                      ? 'bg-slate-800 text-white'
-                      : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                  )
-                }
-              >
-                <item.icon className="h-4 w-4 shrink-0 text-slate-400" />
-                <span>{item.name}</span>
-              </NavLink>
-            ))}
-          </div>
-        </div>
+        )}
       </div>
 
       {/* Footer Info */}
       <div className="p-4 border-t border-slate-800 text-xs text-slate-400">
-        <p className="font-semibold text-slate-300">Phase 01 / 11</p>
-        <p className="text-[11px] mt-0.5">Architecture & Foundation</p>
+        <p className="font-semibold text-slate-300">Phase 02 / 11</p>
+        <p className="text-[11px] mt-0.5">Supabase Auth & RBAC Active</p>
       </div>
     </aside>
   );

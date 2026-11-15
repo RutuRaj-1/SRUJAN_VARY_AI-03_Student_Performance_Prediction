@@ -1,6 +1,6 @@
 """
 Database Engine, Session Local factory, and Health Check utilities.
-Designed to fail safely and gracefully when DATABASE_URL is not set.
+Designed to fail safely and gracefully when DATABASE_URL is not set or has placeholders.
 """
 import time
 from typing import Generator, Optional, Tuple
@@ -20,9 +20,11 @@ def get_engine():
     if _engine is None and settings.is_database_configured:
         try:
             db_url = settings.DATABASE_URL
-            # Handle potential postgres:// -> postgresql:// URL format incompatibility
-            if db_url and db_url.startswith("postgres://"):
-                db_url = db_url.replace("postgres://", "postgresql://", 1)
+            # Normalize postgres:// -> postgresql+psycopg://
+            if db_url.startswith("postgres://"):
+                db_url = db_url.replace("postgres://", "postgresql+psycopg://", 1)
+            elif db_url.startswith("postgresql://") and "+psycopg" not in db_url:
+                db_url = db_url.replace("postgresql://", "postgresql+psycopg://", 1)
 
             _engine = create_engine(
                 db_url,
@@ -65,10 +67,17 @@ def check_database_connection() -> Tuple[bool, str, Optional[float]]:
     Returns:
         (is_connected, status_message, latency_ms)
     """
-    if not settings.is_database_configured:
+    if not settings.DATABASE_URL or not settings.DATABASE_URL.strip():
         return (
             False,
             "DATABASE_URL is not configured. Running in standalone / decoupled mode.",
+            None,
+        )
+
+    if "[YOUR-PASSWORD]" in settings.DATABASE_URL:
+        return (
+            False,
+            "DATABASE_URL contains the unpopulated placeholder [YOUR-PASSWORD]. Please update backend/.env with your Supabase database password.",
             None,
         )
 

@@ -23,23 +23,21 @@ Traditional systems frequently collapse attendance, marks, and coding assessment
 
 ---
 
-## 2. System Architecture
+## 2. System Architecture & Authentication (Phase 02 Active)
 
 MASTERY is architected as a **Modular Monolith**:
-- **Frontend:** React 18, TypeScript, Vite, Tailwind CSS, React Router, TanStack Query, Lucide Icons.
-- **Backend:** Python 3.11+, FastAPI, Uvicorn, Pydantic v2, SQLAlchemy 2.x, Alembic, PostgreSQL.
-- **Database / Cloud:** PostgreSQL / Supabase, with automatic graceful degradation when unconfigured.
-- **AI / ML Layer:** Isolated AI service abstraction for structured extraction; decoupled classical ML service for deterministic risk scoring.
+- **Frontend:** React 18, TypeScript, Vite, Tailwind CSS, React Router, TanStack Query, Lucide Icons, `@supabase/supabase-js`.
+- **Backend:** Python 3.11+, FastAPI, Uvicorn, Pydantic v2, SQLAlchemy 2.x, Alembic, PostgreSQL, `pyjwt[crypto]`, `psycopg`.
+- **Database / Cloud:** Supabase PostgreSQL with Row Level Security (RLS) & Supabase Auth.
+- **JWT Verification:** Asymmetric `ES256` key signature validation via live Supabase JWKS with caching.
+- **Role-Based Access Control:** Strict 5-tier role hierarchy (`SUPER_ADMIN`, `INSTITUTION_ADMIN`, `STUDENT`, `FACULTY`, `PLACEMENT_OFFICER`).
 
 ```
 MASTERY/
-|-- frontend/           # React 18 SPA (Vite + TS + Tailwind + TanStack Query)
+|-- frontend/           # React 18 SPA (Vite + TS + Tailwind + TanStack Query + Supabase JS)
 |-- backend/            # FastAPI Modular Monolith (app/api, app/core, app/db, app/services)
 |-- docs/               # System architecture, database design, API contracts, ADRs
-|-- docker-compose.yml  # Local multi-container development orchestration
 ```
-
----
 
 ## 3. Quick Start & Execution Guide
 
@@ -68,7 +66,7 @@ uvicorn app.main:app --reload --port 8000
 - API Base URL: `http://localhost:8000`
 - Interactive OpenAPI Docs: `http://localhost:8000/docs`
 - Health Diagnostic Probe: `http://localhost:8000/api/v1/health`
-- Database Probe: `http://localhost:8000/api/v1/health/database`
+- Auth Verification: `http://localhost:8000/api/v1/auth/me`
 
 ### Frontend Setup & Execution
 ```bash
@@ -77,13 +75,14 @@ cd frontend
 
 # Install dependencies
 pnpm install
-# (or npm install)
 
 # Start Vite development server
 pnpm dev
-# (or npm run dev)
 ```
 - Frontend UI: `http://localhost:5173`
+- Login Page: `http://localhost:5173/login`
+- Student Registration: `http://localhost:5173/register`
+- Password Recovery: `http://localhost:5173/forgot-password`
 
 ---
 
@@ -94,17 +93,22 @@ pnpm dev
 cd backend
 .venv\Scripts\python -m pytest tests -v
 ```
-Test coverage includes:
-- `test_root_endpoint`: Verifies service branding and version info.
-- `test_health_endpoint`: Verifies application status and service states.
-- `test_database_health_unconfigured`: Verifies graceful degradation when database is unset.
-- `test_custom_exception_handler`: Verifies standard 404/422 JSON error responses.
+Test suite includes 15 automated test cases:
+- Root & Health Probes (Application & Database diagnostic states)
+- Unauthenticated access returns 401
+- Invalid JWT tokens return 401
+- Authenticated student access & permission resolution
+- Role enforcement: Student forbidden from administrative routes (403)
+- Account status enforcement: PENDING accounts blocked with approval notice (403)
+- Institution Admin multi-tenant scoping & cross-institution isolation (403)
+- Super Admin full governance (200)
+- Profile self-edit protection (role tampering strictly prevented)
 
 ### Run Frontend Linting & Build
 ```bash
 cd frontend
-pnpm run lint   # Strict TypeScript check (zero errors)
-pnpm run build  # Vite production build
+pnpm run lint   # Strict TypeScript check (0 errors)
+pnpm run build  # Vite production build (0 errors)
 ```
 
 ---
@@ -112,21 +116,9 @@ pnpm run build  # Vite production build
 ## 5. Architectural Documentation
 
 Complete specifications are located in the `docs/` directory:
-- [SYSTEM_ARCHITECTURE.md](docs/SYSTEM_ARCHITECTURE.md): Comprehensive system topology, data flows, and AI/ML boundaries.
-- [DATABASE_DESIGN.md](docs/DATABASE_DESIGN.md): Entity relationship models, future schemas, audit mixins, and RLS strategy.
-- [API_CONTRACTS.md](docs/API_CONTRACTS.md): Endpoint standards, JSON response formats, error contracts, and domain routes.
+- [SYSTEM_ARCHITECTURE.md](docs/SYSTEM_ARCHITECTURE.md): Comprehensive system topology, JWKS authentication flows, and RBAC matrix.
+- [DATABASE_DESIGN.md](docs/DATABASE_DESIGN.md): Entity relationship models, UUID strategy, initial tables, and RLS policies.
+- [API_CONTRACTS.md](docs/API_CONTRACTS.md): Endpoint standards, JSON response formats, error contracts, and Auth/User/Institution routes.
 - [MODULE_BOUNDARIES.md](docs/MODULE_BOUNDARIES.md): Detailed responsibilities and dependencies for all 7 product modules.
 - [DEVELOPMENT_ROADMAP.md](docs/DEVELOPMENT_ROADMAP.md): Sequential roadmap for Prompts 01 through 11.
-- [ARCHITECTURE_DECISIONS.md](docs/ARCHITECTURE_DECISIONS.md): Architectural Decision Records (ADRs 001–006).
-
----
-
-## 6. The Seven Product Modules
-
-1. **Module 01 — Academic Data Intelligence Hub:** Ingestion, validation, and historical timeline of institutional records.
-2. **Module 02 — AI Syllabus & Competency Intelligence:** Curriculum PDF processing, unit/topic breakdown, and learning outcomes.
-3. **Module 03 — Continuous Learning & Assessment Engine:** Multi-modal formative testing, coding & SQL challenges.
-4. **Module 04 — Evidence Calibration & Student Mastery Analytics:** Demonstrated understanding triangulation and mastery heatmaps.
-5. **Module 05 — Explainable Academic Risk Prediction:** Early-warning risk screening and faculty review checkpoints.
-6. **Module 06 — Personalized Intervention & Student Growth:** Tailored remedial roadmaps, mentorship, and recovery tracking.
-7. **Module 07 — Industry & Placement Readiness Intelligence:** Role benchmarking, practical skill proofs, and placement radars.
+- [ARCHITECTURE_DECISIONS.md](docs/ARCHITECTURE_DECISIONS.md): Architectural Decision Records (ADRs 001–008).

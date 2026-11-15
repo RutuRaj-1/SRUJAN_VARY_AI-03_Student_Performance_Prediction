@@ -1,4 +1,5 @@
 import { ApiError } from '@/types/api';
+import { supabase } from '@/lib/supabase';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
 
@@ -15,13 +16,24 @@ export class ApiClientError extends Error {
 }
 
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  // Normalize URL
   const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
   const url = `${BASE_URL}${normalizedEndpoint}`;
+
+  // Retrieve current active session token from Supabase if available
+  let authHeader: Record<string, string> = {};
+  try {
+    const { data } = await supabase.auth.getSession();
+    if (data.session?.access_token) {
+      authHeader = { Authorization: `Bearer ${data.session.access_token}` };
+    }
+  } catch {
+    // If Supabase session fails to load, continue without auth header
+  }
 
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
     Accept: 'application/json',
+    ...authHeader,
     ...options.headers,
   };
 
@@ -66,6 +78,12 @@ export const apiClient = {
     request<T>(endpoint, {
       ...options,
       method: 'POST',
+      body: data ? JSON.stringify(data) : undefined,
+    }),
+  patch: <T>(endpoint: string, data?: unknown, options?: RequestInit) =>
+    request<T>(endpoint, {
+      ...options,
+      method: 'PATCH',
       body: data ? JSON.stringify(data) : undefined,
     }),
   put: <T>(endpoint: string, data?: unknown, options?: RequestInit) =>

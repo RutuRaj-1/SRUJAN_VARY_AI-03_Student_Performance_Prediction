@@ -26,8 +26,11 @@ class Settings(BaseSettings):
     # Database Settings (PostgreSQL / Supabase PostgreSQL)
     DATABASE_URL: Optional[str] = None
 
-    # Supabase Cloud Integration (Optional at startup)
+    # Supabase Cloud Integration
     SUPABASE_URL: Optional[str] = None
+    SUPABASE_PUBLISHABLE_KEY: Optional[str] = None
+    SUPABASE_SECRET_KEY: Optional[str] = None
+    # Backward compatibility with legacy key names
     SUPABASE_ANON_KEY: Optional[str] = None
     SUPABASE_SERVICE_ROLE_KEY: Optional[str] = None
 
@@ -54,8 +57,21 @@ class Settings(BaseSettings):
         return v
 
     @property
+    def effective_publishable_key(self) -> Optional[str]:
+        return self.SUPABASE_PUBLISHABLE_KEY or self.SUPABASE_ANON_KEY
+
+    @property
+    def effective_secret_key(self) -> Optional[str]:
+        return self.SUPABASE_SECRET_KEY or self.SUPABASE_SERVICE_ROLE_KEY
+
+    @property
     def is_database_configured(self) -> bool:
-        return bool(self.DATABASE_URL and self.DATABASE_URL.strip())
+        if not self.DATABASE_URL or not self.DATABASE_URL.strip():
+            return False
+        # If placeholder is present, database is not yet fully configured
+        if "[YOUR-PASSWORD]" in self.DATABASE_URL:
+            return False
+        return True
 
     @property
     def is_ai_configured(self) -> bool:
@@ -66,8 +82,7 @@ class Settings(BaseSettings):
         return bool(
             self.SUPABASE_URL
             and self.SUPABASE_URL.strip()
-            and self.SUPABASE_ANON_KEY
-            and self.SUPABASE_ANON_KEY.strip()
+            and self.effective_publishable_key
         )
 
 

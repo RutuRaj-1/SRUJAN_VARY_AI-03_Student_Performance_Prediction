@@ -1,12 +1,17 @@
 from fastapi import APIRouter
-from app.api.v1.endpoints import health
+from app.api.v1.endpoints import health, auth, users, institutions
 
 api_router = APIRouter()
 
 # Core diagnostic and health probes
 api_router.include_router(health.router)
 
-# Domain router hooks (Phase 02 - Phase 11 will register endpoints here)
+# Authentication & Identity (Phase 02)
+api_router.include_router(auth.router)
+api_router.include_router(users.router)
+api_router.include_router(institutions.router)
+
+# Domain router hooks (Phase 03 - Phase 08 will register endpoints here)
 # - Module 01: Academic Data Intelligence Hub (/academic)
 # - Module 02: AI Syllabus & Competency Intelligence (/syllabus)
 # - Module 03: Continuous Learning & Assessment Engine (/assessments)
