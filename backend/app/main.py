@@ -34,8 +34,8 @@ app.add_middleware(
 
 class ProcessTimeLoggingMiddleware:
     """Pure ASGI middleware for process time tracking and access logging."""
-    def __init__(self, asgi_app):
-        self.asgi_app = asgi_app
+    def __init__(self, app=None, asgi_app=None):
+        self.asgi_app = app if app is not None else asgi_app
 
     async def __call__(self, scope, receive, send):
         if scope["type"] != "http":

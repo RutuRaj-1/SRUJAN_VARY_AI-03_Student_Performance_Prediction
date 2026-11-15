@@ -10,6 +10,13 @@ from app.db.base import Base
 from app.db.session import get_db
 from app.models.institution import Institution
 
+from sqlalchemy.ext.compiler import compiles
+from sqlalchemy.dialects.postgresql import JSONB
+
+@compiles(JSONB, "sqlite")
+def compile_jsonb_sqlite(type_, compiler, **kw):
+    return "JSON"
+
 # Shared in-memory test database for test suite
 TEST_DATABASE_URL = "sqlite:///:memory:"
 
