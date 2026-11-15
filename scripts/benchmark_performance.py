@@ -7,8 +7,14 @@ across all 5 role-based unified dashboard endpoints.
 import os
 import sys
 import time
-import statistics
 import uuid
+import statistics
+import warnings
+import logging
+
+# Suppress deprecation warnings from external dependencies (Starlette / FastAPI on Python 3.14+)
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
 
 # Robust path resolution: works whether executed from root, scripts/, or backend/
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -17,29 +23,79 @@ if BACKEND_DIR not in sys.path:
     sys.path.insert(0, BACKEND_DIR)
 
 from fastapi.testclient import TestClient
+from sqlalchemy import text, create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
+from sqlalchemy.ext.compiler import compiles
+from sqlalchemy.dialects.postgresql import JSONB
+
+# SQLite compatibility compiler hook for JSONB
+@compiles(JSONB, "sqlite")
+def compile_jsonb_sqlite(type_, compiler, **kw):
+    return "JSON"
+
 from app.main import app
 from app.core.security import get_current_user, CurrentUser
+from app.db.base import Base
+from app.db.session import get_session_local, get_db
 from app.models.enums import UserRole, AccountStatus
 from app.models.profile import Profile
 from app.models.institution import Institution
 from app.models.syllabus import AcademicProgram
 from app.models.academic_data import StudentAcademicProfile
-from app.db.session import get_session_local
 
-session_factory = get_session_local()
+# Configure logging: quiet verbose per-request access logs during benchmark runs
+logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("mastery").setLevel(logging.WARNING)
+
+# Parse CLI options (iterations or help)
+ITERATIONS = int(os.environ.get("BENCHMARK_ITERATIONS", "15"))
+if len(sys.argv) > 1:
+    arg = sys.argv[1].strip()
+    if arg in ("-h", "--help"):
+        print("Usage: python scripts/benchmark_performance.py [ITERATIONS]")
+        print("Example: python scripts/benchmark_performance.py 20")
+        sys.exit(0)
+    elif arg.isdigit():
+        ITERATIONS = int(arg)
+
+# Determine database session provider: use PostgreSQL if available; fallback to SQLite in-memory
+session_factory = None
+is_sqlite_fallback = False
+
+primary_factory = get_session_local()
+if primary_factory:
+    try:
+        with primary_factory() as test_conn:
+            test_conn.execute(text("SELECT 1"))
+        session_factory = primary_factory
+    except Exception as exc:
+        print(f"[WARN] Primary database connection test failed: {exc}")
+        session_factory = None
+
 if not session_factory:
-    print("[ERROR] Database session factory could not be constructed.")
-    print("Please ensure DATABASE_URL is configured in backend/.env.")
-    sys.exit(1)
+    print("[INFO] PostgreSQL database is not reachable. Initializing high-speed in-memory database for benchmark...")
+    fallback_engine = create_engine(
+        "sqlite:///:memory:",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+    Base.metadata.create_all(bind=fallback_engine)
+    session_factory = sessionmaker(autocommit=False, autoflush=False, bind=fallback_engine)
+    is_sqlite_fallback = True
+
+    # Override FastAPI get_db dependency for SQLite fallback
+    def override_get_db():
+        db_session = session_factory()
+        try:
+            yield db_session
+        finally:
+            db_session.close()
+
+    app.dependency_overrides[get_db] = override_get_db
 
 client = TestClient(app)
 
-# Allow iterations to be set via CLI or env (default to 15 for responsive CLI benchmark)
-ITERATIONS = int(os.environ.get("BENCHMARK_ITERATIONS", "15"))
-if len(sys.argv) > 1 and sys.argv[1].isdigit():
-    ITERATIONS = int(sys.argv[1])
-
-# Setup temporary test identity records in active db for benchmarking
 db = session_factory()
 inst_id = uuid.uuid4()
 prog_id = uuid.uuid4()
@@ -57,11 +113,14 @@ try:
         email=f"bench_{str(uuid.uuid4())[:6]}@mastery.edu",
         full_name="Bench Student",
         role=UserRole.STUDENT.value,
+        institution_id=inst_id,
+        account_status=AccountStatus.ACTIVE.value,
     )
     inst = Institution(
         id=inst_id,
         name="Benchmark Performance University",
         institution_code=f"BPU-{str(uuid.uuid4())[:4].upper()}",
+        institution_type="UNIVERSITY",
         city="Pune",
         state="Maharashtra",
     )
@@ -87,7 +146,7 @@ try:
         current_semester=5,
         academic_status="ENROLLED",
     )
-    db.add_all([prof, inst, prog, sap])
+    db.add_all([inst, prof, prog, sap])
     db.commit()
 
     endpoints = [
@@ -99,7 +158,9 @@ try:
     ]
 
     results = {}
-    print(f"Executing {ITERATIONS} warmup and measurement iterations per endpoint...")
+    db_mode = "SQLite In-Memory" if is_sqlite_fallback else "PostgreSQL Production"
+    print(f"Target Database: {db_mode}")
+    print(f"Executing {ITERATIONS} warmup and measurement iterations per endpoint...\n")
 
     for ep, role, uid in endpoints:
         times = []
@@ -117,16 +178,22 @@ try:
 
         # Warmup calls
         for _ in range(2):
-            client.get(ep)
+            try:
+                client.get(ep)
+            except Exception:
+                pass
 
         # Measurement calls
         for _ in range(ITERATIONS):
             t0 = time.perf_counter()
-            resp = client.get(ep)
-            elapsed = (time.perf_counter() - t0) * 1000.0
-            if resp.status_code == 200:
-                times.append(elapsed)
-            else:
+            try:
+                resp = client.get(ep)
+                elapsed = (time.perf_counter() - t0) * 1000.0
+                if resp.status_code == 200:
+                    times.append(elapsed)
+                else:
+                    errors += 1
+            except Exception:
                 errors += 1
 
         endpoint_name = ep.split("?")[0]
@@ -152,27 +219,30 @@ try:
             "requests": ITERATIONS,
         }
 
-    print("\n" + "=" * 80)
+    print("=" * 86)
     print(f"{'Endpoint':<45} | {'Role':<17} | {'Median':<8} | {'p95':<8} | {'Errors'}")
-    print("=" * 80)
+    print("=" * 86)
     for ep, data in results.items():
         print(f"{ep:<45} | {data['role']:<17} | {data['median_ms']:>6.2f}ms | {data['p95_ms']:>6.2f}ms | {data['errors']}/{data['requests']}")
-    print("=" * 80)
+    print("=" * 86)
 
 except Exception as exc:
     print(f"[ERROR] Benchmark execution encountered an error: {exc}")
     raise
 finally:
-    # Clean up temporary test records to leave the database clean
+    # Clear dependency overrides
+    app.dependency_overrides.clear()
+
+    # Clean up temporary test records in reverse dependency order
     try:
         if sap:
             db.delete(sap)
         if prog:
             db.delete(prog)
-        if inst:
-            db.delete(inst)
         if prof:
             db.delete(prof)
+        if inst:
+            db.delete(inst)
         db.commit()
     except Exception:
         db.rollback()
