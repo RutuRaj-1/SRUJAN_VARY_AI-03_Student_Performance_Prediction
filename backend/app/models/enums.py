@@ -74,3 +74,68 @@ class ReviewStatus(str, Enum):
     APPROVED = "APPROVED"
     REJECTED = "REJECTED"
     MODIFIED = "MODIFIED"
+
+
+class AssessmentType(str, Enum):
+    INTERNAL_TEST = "INTERNAL_TEST"
+    MID_TERM = "MID_TERM"
+    END_TERM = "END_TERM"
+    ASSIGNMENT = "ASSIGNMENT"
+    QUIZ = "QUIZ"
+    PRACTICAL = "PRACTICAL"
+    LAB = "LAB"
+    PROJECT = "PROJECT"
+    VIVA = "VIVA"
+    OTHER = "OTHER"
+
+
+class AssessmentResultStatus(str, Enum):
+    PASSED = "PASSED"
+    FAILED = "FAILED"
+    ABSENT = "ABSENT"
+    NOT_SUBMITTED = "NOT_SUBMITTED"
+    EXEMPTED = "EXEMPTED"
+    PENDING = "PENDING"
+
+
+class AttendanceStatus(str, Enum):
+    PRESENT = "PRESENT"
+    ABSENT = "ABSENT"
+    LATE = "LATE"
+    EXCUSED = "EXCUSED"
+    NOT_RECORDED = "NOT_RECORDED"
+
+
+class RecordVerificationStatus(str, Enum):
+    IMPORTED = "IMPORTED"
+    VALIDATION_REQUIRED = "VALIDATION_REQUIRED"
+    REVIEW_REQUIRED = "REVIEW_REQUIRED"
+    VERIFIED = "VERIFIED"
+    REJECTED = "REJECTED"
+    CORRECTION_REQUIRED = "CORRECTION_REQUIRED"
+
+
+class DataQualitySeverity(str, Enum):
+    INFO = "INFO"
+    WARNING = "WARNING"
+    ERROR = "ERROR"
+    CRITICAL = "CRITICAL"
+
+
+class ImportCategory(str, Enum):
+    STUDENTS = "STUDENTS"
+    ENROLLMENTS = "ENROLLMENTS"
+    ASSESSMENTS = "ASSESSMENTS"
+    PERFORMANCE = "PERFORMANCE"
+    ATTENDANCE = "ATTENDANCE"
+
+
+class ImportJobStatus(str, Enum):
+    PENDING = "PENDING"
+    VALIDATING = "VALIDATING"
+    PREVIEW_READY = "PREVIEW_READY"
+    IMPORTING = "IMPORTING"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+    CANCELLED = "CANCELLED"
+

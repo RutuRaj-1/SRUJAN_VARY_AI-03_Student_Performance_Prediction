@@ -9,6 +9,13 @@ from app.models.enums import (
     IndustryMappingStatus,
     IndustryImportance,
     ReviewStatus,
+    AssessmentType,
+    AssessmentResultStatus,
+    AttendanceStatus,
+    RecordVerificationStatus,
+    DataQualitySeverity,
+    ImportCategory,
+    ImportJobStatus,
 )
 from app.models.institution import Institution, InstitutionMembership
 from app.models.profile import Profile
@@ -26,6 +33,17 @@ from app.models.syllabus import (
     CurriculumGapAnalysis,
     SyllabusReviewHistory,
 )
+from app.models.academic_data import (
+    StudentAcademicProfile,
+    StudentSubjectEnrollment,
+    AcademicAssessment,
+    StudentAssessmentRecord,
+    StudentAttendanceRecord,
+    AcademicImportJob,
+    AcademicImportError,
+    AcademicDataQualityFinding,
+    AcademicRecordAudit,
+)
 
 __all__ = [
     "UserRole",
@@ -38,6 +56,13 @@ __all__ = [
     "IndustryMappingStatus",
     "IndustryImportance",
     "ReviewStatus",
+    "AssessmentType",
+    "AssessmentResultStatus",
+    "AttendanceStatus",
+    "RecordVerificationStatus",
+    "DataQualitySeverity",
+    "ImportCategory",
+    "ImportJobStatus",
     "Institution",
     "InstitutionMembership",
     "Profile",
@@ -53,4 +78,13 @@ __all__ = [
     "IndustryCompetencyRequirement",
     "CurriculumGapAnalysis",
     "SyllabusReviewHistory",
+    "StudentAcademicProfile",
+    "StudentSubjectEnrollment",
+    "AcademicAssessment",
+    "StudentAssessmentRecord",
+    "StudentAttendanceRecord",
+    "AcademicImportJob",
+    "AcademicImportError",
+    "AcademicDataQualityFinding",
+    "AcademicRecordAudit",
 ]

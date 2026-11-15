@@ -93,16 +93,20 @@ pnpm dev
 cd backend
 .venv\Scripts\python -m pytest tests -v
 ```
-Test suite includes 15 automated test cases:
+Test suite includes **28 automated test cases** (100% passing):
 - Root & Health Probes (Application & Database diagnostic states)
-- Unauthenticated access returns 401
-- Invalid JWT tokens return 401
-- Authenticated student access & permission resolution
-- Role enforcement: Student forbidden from administrative routes (403)
-- Account status enforcement: PENDING accounts blocked with approval notice (403)
-- Institution Admin multi-tenant scoping & cross-institution isolation (403)
-- Super Admin full governance (200)
-- Profile self-edit protection (role tampering strictly prevented)
+- Supabase JWKS & JWT Authentication & Permission Resolution
+- Role enforcement (Student, Faculty, Institution Admin, Super Admin)
+- Multi-tenant cross-institution isolation (403 Forbidden)
+- AI Syllabus & Competency Intelligence Engine tests
+- Academic Data Intelligence Hub tests:
+  - Student profile creation & institutional enrollment uniqueness (409 Conflict)
+  - Subject enrollment term-level duplicate rejection
+  - Assessment definition & marks boundary validation (`0 <= marks <= max_marks`)
+  - Session-level attendance recording & unique session constraints
+  - Two-phase batch import workflow (CSV & XLSX parsing, preview & commit)
+  - Deterministic data quality anomaly detection scanner
+  - Faculty verification & immutable audit trail logging
 
 ### Run Frontend Linting & Build
 ```bash
@@ -118,7 +122,9 @@ pnpm run build  # Vite production build (0 errors)
 Complete specifications are located in the `docs/` directory:
 - [SYSTEM_ARCHITECTURE.md](docs/SYSTEM_ARCHITECTURE.md): Comprehensive system topology, JWKS authentication flows, and RBAC matrix.
 - [DATABASE_DESIGN.md](docs/DATABASE_DESIGN.md): Entity relationship models, UUID strategy, initial tables, and RLS policies.
-- [API_CONTRACTS.md](docs/API_CONTRACTS.md): Endpoint standards, JSON response formats, error contracts, and Auth/User/Institution routes.
+- [ACADEMIC_DATA_MODEL.md](docs/ACADEMIC_DATA_MODEL.md): Academic Data Intelligence Hub data model, constraints, and indexes.
+- [ACADEMIC_DATA_CONTRACTS.md](docs/ACADEMIC_DATA_CONTRACTS.md): Downstream data contracts for Assessment, Mastery, and Risk engines.
+- [API_CONTRACTS.md](docs/API_CONTRACTS.md): Endpoint standards, JSON response formats, error contracts, and Auth/Syllabus/Academic routes.
 - [MODULE_BOUNDARIES.md](docs/MODULE_BOUNDARIES.md): Detailed responsibilities and dependencies for all 7 product modules.
 - [DEVELOPMENT_ROADMAP.md](docs/DEVELOPMENT_ROADMAP.md): Sequential roadmap for Prompts 01 through 11.
 - [ARCHITECTURE_DECISIONS.md](docs/ARCHITECTURE_DECISIONS.md): Architectural Decision Records (ADRs 001–008).

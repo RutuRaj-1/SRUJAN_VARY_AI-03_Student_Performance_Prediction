@@ -305,3 +305,113 @@ CREATE TABLE syllabus_review_history (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 ```
+
+
+---
+
+## 4. Phase 04 Tables: Academic Data Intelligence Hub
+
+### `student_academic_profiles`
+Maintains institutional student identities, enrollment details, and optional links to Supabase auth accounts.
+```sql
+CREATE TABLE student_academic_profiles (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    institution_id UUID NOT NULL REFERENCES institutions(id) ON DELETE CASCADE,
+    profile_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
+    program_id UUID REFERENCES academic_programs(id) ON DELETE SET NULL,
+    enrollment_number VARCHAR(100) NOT NULL,
+    admission_number VARCHAR(100),
+    first_name VARCHAR(150) NOT NULL,
+    last_name VARCHAR(150) NOT NULL,
+    email VARCHAR(255),
+    department VARCHAR(150) NOT NULL,
+    admission_year INTEGER NOT NULL DEFAULT 2024,
+    current_semester INTEGER NOT NULL DEFAULT 1,
+    academic_status VARCHAR(50) NOT NULL DEFAULT 'ENROLLED',
+    verification_status VARCHAR(50) NOT NULL DEFAULT 'UNVERIFIED',
+    metadata_json JSONB NOT NULL DEFAULT '{}'::jsonb,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_student_inst_enrollment UNIQUE (institution_id, enrollment_number)
+);
+```
+
+### `student_subject_enrollments`
+Course registrations per student, subject, semester, and academic year.
+```sql
+CREATE TABLE student_subject_enrollments (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    institution_id UUID NOT NULL REFERENCES institutions(id) ON DELETE CASCADE,
+    student_id UUID NOT NULL REFERENCES student_academic_profiles(id) ON DELETE CASCADE,
+    subject_id UUID NOT NULL REFERENCES academic_subjects(id) ON DELETE CASCADE,
+    academic_year VARCHAR(50) NOT NULL,
+    semester INTEGER NOT NULL,
+    enrollment_status VARCHAR(50) NOT NULL DEFAULT 'ACTIVE',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_student_sub_term UNIQUE (student_id, subject_id, academic_year, semester)
+);
+```
+
+### `academic_assessments`
+Assessment definitions, types, maximum marks, and weightages.
+```sql
+CREATE TABLE academic_assessments (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    institution_id UUID NOT NULL REFERENCES institutions(id) ON DELETE CASCADE,
+    subject_id UUID NOT NULL REFERENCES academic_subjects(id) ON DELETE CASCADE,
+    name VARCHAR(200) NOT NULL,
+    assessment_type VARCHAR(50) NOT NULL,
+    max_marks NUMERIC(6, 2) NOT NULL,
+    passing_marks NUMERIC(6, 2),
+    weightage_percentage NUMERIC(5, 2),
+    academic_year VARCHAR(50) NOT NULL,
+    semester INTEGER NOT NULL,
+    assessment_date DATE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+### `student_assessment_records`
+Individual student scores, snapshots, and non-numeric states (`PASSED`, `FAILED`, `ABSENT`, `NOT_SUBMITTED`, `EXEMPTED`).
+```sql
+CREATE TABLE student_assessment_records (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    institution_id UUID NOT NULL REFERENCES institutions(id) ON DELETE CASCADE,
+    assessment_id UUID NOT NULL REFERENCES academic_assessments(id) ON DELETE CASCADE,
+    student_id UUID NOT NULL REFERENCES student_academic_profiles(id) ON DELETE CASCADE,
+    marks_obtained NUMERIC(6, 2),
+    max_marks_snapshot NUMERIC(6, 2) NOT NULL,
+    result_status VARCHAR(50) NOT NULL DEFAULT 'PASSED',
+    verification_status VARCHAR(50) NOT NULL DEFAULT 'UNVERIFIED',
+    verified_by_user_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
+    verified_at TIMESTAMPTZ,
+    evaluation_remarks TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_student_assessment UNIQUE (assessment_id, student_id)
+);
+```
+
+### `student_attendance_records`
+Session-level attendance records per student and subject.
+```sql
+CREATE TABLE student_attendance_records (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    institution_id UUID NOT NULL REFERENCES institutions(id) ON DELETE CASCADE,
+    student_id UUID NOT NULL REFERENCES student_academic_profiles(id) ON DELETE CASCADE,
+    subject_id UUID NOT NULL REFERENCES academic_subjects(id) ON DELETE CASCADE,
+    session_date DATE NOT NULL,
+    session_name VARCHAR(150) NOT NULL DEFAULT 'Lecture',
+    status VARCHAR(50) NOT NULL,
+    minutes_attended INTEGER,
+    remarks TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_student_attendance_session UNIQUE (student_id, subject_id, session_date, session_name)
+);
+```
+
+### `academic_import_jobs`, `academic_import_errors`, `academic_data_quality_findings`, `academic_record_audits`
+Supporting tables for batch ingestion, multi-severity data quality analysis, and immutable compliance auditing.

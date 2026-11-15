@@ -146,3 +146,86 @@ Tokens are validated via the Supabase project's JWKS endpoint (`ES256`).
 - `GET /api/v1/syllabus/documents/{id}/history` — Audit trail log displaying all reviews, unit edits, and topic modifications
 - `PATCH /api/v1/syllabus/units/{id}` — Faculty edit unit title, estimated hours, and description
 - `PATCH /api/v1/syllabus/topics/{id}` — Faculty edit topic name and subtopics
+
+
+---
+
+## 4. Module 03: Academic Data Intelligence Hub Endpoints (Phase 04)
+
+Base Route: `/api/v1/academic-data` (also mounted as `/academic`)
+
+### 4.1 Overview & Metrics
+- `GET /api/v1/academic-data/overview`
+  - **Permissions:** All authenticated users (`STUDENT` scoped to self, others scoped to institution).
+  - **Description:** Returns aggregate statistics on total students, active enrollments, assessments, verified records, attendance consistency, and open data quality issues.
+
+### 4.2 Student Directory & Academic Profiles
+- `GET /api/v1/academic-data/students`
+  - **Query Params:** `search`, `department`, `semester`, `program_id`, `skip`, `limit`.
+  - **Permissions:** `SUPER_ADMIN`, `INSTITUTION_ADMIN`, `FACULTY`.
+  - **Description:** Filterable directory of student academic profiles.
+- `POST /api/v1/academic-data/students`
+  - **Permissions:** `SUPER_ADMIN`, `INSTITUTION_ADMIN`.
+  - **Description:** Create student academic profile with institutional enrollment number uniqueness.
+- `GET /api/v1/academic-data/students/{id}`
+  - **Permissions:** Self-student or authorized faculty/admin.
+  - **Description:** Comprehensive academic profile containing enrollments, assessment performance history, attendance session logs, and quality flags.
+
+### 4.3 Subject Enrollments
+- `POST /api/v1/academic-data/enrollments`
+  - **Permissions:** `SUPER_ADMIN`, `INSTITUTION_ADMIN`.
+  - **Description:** Register student in academic subject for specific academic year and semester.
+- `GET /api/v1/academic-data/enrollments`
+  - **Query Params:** `student_id`, `subject_id`, `academic_year`, `semester`.
+  - **Description:** Query enrollments by student, subject, or academic term.
+
+### 4.4 Academic Assessments
+- `POST /api/v1/academic-data/assessments`
+  - **Permissions:** `SUPER_ADMIN`, `INSTITUTION_ADMIN`, `FACULTY`.
+  - **Description:** Define new course assessment with maximum marks, passing marks, weightage, and type.
+- `GET /api/v1/academic-data/assessments`
+  - **Query Params:** `subject_id`, `academic_year`, `semester`.
+  - **Description:** List configured assessments for an academic subject.
+
+### 4.5 Performance Records & Marks
+- `POST /api/v1/academic-data/marks`
+  - **Permissions:** `SUPER_ADMIN`, `INSTITUTION_ADMIN`, `FACULTY`.
+  - **Description:** Record student marks with automatic snapshot of `max_marks`, range checks (`0 <= marks <= max_marks`), and non-numeric states (`PASSED`, `FAILED`, `ABSENT`, `NOT_SUBMITTED`, `EXEMPTED`).
+- `GET /api/v1/academic-data/marks`
+  - **Query Params:** `student_id`, `assessment_id`, `subject_id`.
+  - **Description:** Retrieve student assessment performance records with verification status.
+
+### 4.6 Student Attendance Records
+- `POST /api/v1/academic-data/attendance`
+  - **Permissions:** `SUPER_ADMIN`, `INSTITUTION_ADMIN`, `FACULTY`.
+  - **Description:** Record session-level attendance status (`PRESENT`, `ABSENT`, `LATE`, `EXCUSED`, `NOT_RECORDED`).
+- `GET /api/v1/academic-data/attendance`
+  - **Query Params:** `student_id`, `subject_id`, `from_date`, `to_date`.
+  - **Description:** Retrieve time-series attendance records for individual student or course cohort.
+
+### 4.7 Batch Ingestion & Import Center
+- `POST /api/v1/academic-data/imports/upload`
+  - **Content-Type:** `multipart/form-data`
+  - **Form Fields:** `file`, `category` (`STUDENTS`, `PERFORMANCE`, `ATTENDANCE`), `academic_year`, `semester`, `subject_id`, `program_id`.
+  - **Description:** Two-phase upload: validates headers, parses data rows, identifies parsing/boundary errors, and returns a staged import preview.
+- `POST /api/v1/academic-data/imports/{id}/execute`
+  - **Permissions:** `SUPER_ADMIN`, `INSTITUTION_ADMIN`.
+  - **Description:** Executes atomic commit of staged valid rows into core academic tables.
+- `GET /api/v1/academic-data/imports`
+  - **Description:** List import jobs and execution logs.
+- `GET /api/v1/academic-data/imports/{id}/errors`
+  - **Description:** Detailed row-by-row error report for failed imports.
+
+### 4.8 Data Quality & Anomaly Intelligence
+- `POST /api/v1/academic-data/quality/scan`
+  - **Permissions:** `SUPER_ADMIN`, `INSTITUTION_ADMIN`, `FACULTY`.
+  - **Description:** Executes deterministic heuristic rules across student records, detecting marks without attendance, attendance without enrollment, unverified high-variance scores, and duplicate enrollment attempts.
+- `GET /api/v1/academic-data/quality/findings`
+  - **Description:** List active quality findings categorized by severity (`CRITICAL`, `ERROR`, `WARNING`, `INFO`).
+
+### 4.9 Record Verification & Compliance Audits
+- `POST /api/v1/academic-data/records/verify`
+  - **Permissions:** `SUPER_ADMIN`, `INSTITUTION_ADMIN`, `FACULTY`.
+  - **Description:** Faculty verification of marks or student profiles with audit trail logging and mandatory change justifications.
+- `GET /api/v1/academic-data/audits`
+  - **Description:** Append-only history of changes to academic entities.

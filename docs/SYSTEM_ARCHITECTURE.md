@@ -91,3 +91,23 @@ MASTERY delegates user identity management to **Supabase Auth** while retaining 
 3. **Database Trigger Layer:**
    - `public.handle_new_user()` auto-provisions a `profiles` record on `auth.users` insert with default role `STUDENT` and status `PENDING`.
    - Never trusts client-supplied metadata for administrative privilege escalation.
+
+
+---
+
+## 5. Module 02: AI Syllabus & Competency Intelligence Architecture (Phase 03)
+
+- **Extraction & Normalization Engine**: PyMuPDF-based PDF ingestion with rule-guided structure recovery.
+- **Hierarchical Knowledge Graph**: Deconstructs syllabi into `SyllabusUnit`, `SyllabusTopic`, and granular `LearningOutcome` mapped to Bloom's Revised Taxonomy levels.
+- **Bi-Directional Competency Mapping**: Bridges academic topics with real-world `Competency` nodes and industry benchmark profiles (`IndustryRoleProfile`, `IndustryCompetencyRequirement`).
+- **Human-in-the-Loop Governance**: Automated AI parsing requires explicit faculty review and approval (`syllabus_review_history`) before entering the authoritative knowledge base.
+
+---
+
+## 6. Module 03: Academic Data Intelligence Hub Architecture (Phase 04)
+
+- **Evidence Ingestion Subsystem**: Two-phase staged parser supporting multi-format CSV and XLSX spreadsheets with preview, validation, and atomic commit.
+- **Strict Boundary Integrity**: Marks validated against `0 <= marks <= max_marks_snapshot` at schema and database check constraint levels.
+- **Non-Numeric Truth Preservation**: Explicit differentiation between academic assessment failure and non-demonstration (`ABSENT`, `NOT_SUBMITTED`, `EXEMPTED`) to eliminate zero-fill skew in downstream intelligence.
+- **Deterministic Quality Intelligence**: Real-time heuristic scanning flagging orphaned records, extreme grade variances, and attendance-performance discrepancies.
+- **Immutable Audit Trail**: Changes to student academic records, marks, and attendance are permanently tracked in `academic_record_audits` with actor ID, timestamp, and mandatory justification.
