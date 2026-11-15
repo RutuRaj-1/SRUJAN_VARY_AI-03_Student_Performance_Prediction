@@ -653,3 +653,149 @@ CREATE TABLE learning_gap_findings (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 ```
+
+---
+
+## 8. Phase 07: Academic Risk Prediction Tables
+
+### `academic_risk_targets`
+Defines institutional academic risk definitions, target classification policies, passing thresholds, and prediction horizons.
+```sql
+CREATE TABLE academic_risk_targets (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    institution_id UUID NOT NULL REFERENCES institutions(id) ON DELETE CASCADE,
+    subject_id UUID NOT NULL REFERENCES academic_subjects(id) ON DELETE CASCADE,
+    target_code VARCHAR(64) NOT NULL,
+    target_name VARCHAR(255) NOT NULL,
+    outcome_definition TEXT NOT NULL,
+    positive_label_definition TEXT NOT NULL,
+    negative_label_definition TEXT NOT NULL,
+    passing_threshold_percentage FLOAT NOT NULL DEFAULT 50.0,
+    prediction_horizon_weeks INTEGER NOT NULL DEFAULT 4,
+    is_institution_policy BOOLEAN NOT NULL DEFAULT false,
+    status VARCHAR(32) NOT NULL DEFAULT 'ACTIVE',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_risk_target_inst_subj_code UNIQUE (institution_id, subject_id, target_code)
+);
+```
+
+### `risk_feature_snapshots`
+Time-bounded snapshot of calculated academic feature vectors before observation cutoffs.
+```sql
+CREATE TABLE risk_feature_snapshots (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    institution_id UUID NOT NULL REFERENCES institutions(id) ON DELETE CASCADE,
+    student_id UUID NOT NULL REFERENCES student_academic_profiles(id) ON DELETE CASCADE,
+    subject_id UUID NOT NULL REFERENCES academic_subjects(id) ON DELETE CASCADE,
+    target_id UUID REFERENCES academic_risk_targets(id) ON DELETE SET NULL,
+    observation_cutoff_date TIMESTAMPTZ NOT NULL,
+    feature_vector_json JSONB NOT NULL DEFAULT '{}'::jsonb,
+    data_provenance_json JSONB NOT NULL DEFAULT '{}'::jsonb,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_risk_feature_snap_stud_subj_cutoff UNIQUE (student_id, subject_id, observation_cutoff_date)
+);
+```
+
+### `risk_model_versions`
+Institutional model registry storing trained machine learning algorithms and deterministic rule baselines.
+```sql
+CREATE TABLE risk_model_versions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    institution_id UUID NOT NULL REFERENCES institutions(id) ON DELETE CASCADE,
+    target_id UUID NOT NULL REFERENCES academic_risk_targets(id) ON DELETE CASCADE,
+    version_tag VARCHAR(64) NOT NULL,
+    model_type VARCHAR(32) NOT NULL,
+    algorithm_name VARCHAR(128) NOT NULL,
+    training_cutoff_date TIMESTAMPTZ NOT NULL,
+    training_sample_count INTEGER NOT NULL DEFAULT 0,
+    positive_sample_count INTEGER NOT NULL DEFAULT 0,
+    negative_sample_count INTEGER NOT NULL DEFAULT 0,
+    feature_names JSONB NOT NULL DEFAULT '[]'::jsonb,
+    hyperparameters_json JSONB NOT NULL DEFAULT '{}'::jsonb,
+    parameters_json JSONB NOT NULL DEFAULT '{}'::jsonb,
+    model_artifact_path VARCHAR(512),
+    is_active BOOLEAN NOT NULL DEFAULT false,
+    model_status VARCHAR(32) NOT NULL DEFAULT 'TRAINED',
+    trained_by_profile_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+### `risk_model_evaluations`
+Quantitative validation benchmarks and evaluation metrics computed over cross-validation splits.
+```sql
+CREATE TABLE risk_model_evaluations (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    institution_id UUID NOT NULL REFERENCES institutions(id) ON DELETE CASCADE,
+    model_version_id UUID NOT NULL REFERENCES risk_model_versions(id) ON DELETE CASCADE,
+    evaluation_type VARCHAR(32) NOT NULL,
+    sample_size INTEGER NOT NULL,
+    accuracy FLOAT,
+    precision FLOAT,
+    recall FLOAT,
+    f1_score FLOAT,
+    roc_auc FLOAT,
+    brier_score FLOAT,
+    confusion_matrix_json JSONB NOT NULL DEFAULT '{}'::jsonb,
+    evaluation_metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+### `academic_risk_predictions`
+Individual student inference predictions evaluated against a target policy.
+```sql
+CREATE TABLE academic_risk_predictions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    institution_id UUID NOT NULL REFERENCES institutions(id) ON DELETE CASCADE,
+    target_id UUID NOT NULL REFERENCES academic_risk_targets(id) ON DELETE CASCADE,
+    model_version_id UUID NOT NULL REFERENCES risk_model_versions(id) ON DELETE CASCADE,
+    student_id UUID NOT NULL REFERENCES student_academic_profiles(id) ON DELETE CASCADE,
+    subject_id UUID NOT NULL REFERENCES academic_subjects(id) ON DELETE CASCADE,
+    cutoff_date TIMESTAMPTZ NOT NULL,
+    risk_score FLOAT,
+    risk_classification VARCHAR(32) NOT NULL,
+    evidence_sufficiency VARCHAR(32) NOT NULL DEFAULT 'MODERATE',
+    prediction_status VARCHAR(32) NOT NULL DEFAULT 'ACTIVE',
+    scientific_disclaimer TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+### `academic_risk_prediction_explanations`
+Grounded explanatory attributions and directional feature contributions.
+```sql
+CREATE TABLE academic_risk_prediction_explanations (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    prediction_id UUID NOT NULL REFERENCES academic_risk_predictions(id) ON DELETE CASCADE,
+    feature_name VARCHAR(64) NOT NULL,
+    feature_value FLOAT NOT NULL,
+    contribution_weight FLOAT NOT NULL,
+    explanation_text TEXT NOT NULL,
+    source_evidence_reference VARCHAR(255) NOT NULL,
+    is_adverse_factor BOOLEAN NOT NULL DEFAULT false,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+### `risk_prediction_jobs`
+Batch execution audit trail for asynchronous cohort inference and screening.
+```sql
+CREATE TABLE risk_prediction_jobs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    institution_id UUID NOT NULL REFERENCES institutions(id) ON DELETE CASCADE,
+    subject_id UUID NOT NULL REFERENCES academic_subjects(id) ON DELETE CASCADE,
+    target_id UUID NOT NULL REFERENCES academic_risk_targets(id) ON DELETE CASCADE,
+    model_version_id UUID REFERENCES risk_model_versions(id) ON DELETE SET NULL,
+    job_type VARCHAR(32) NOT NULL DEFAULT 'BATCH_INFERENCE',
+    status VARCHAR(32) NOT NULL DEFAULT 'PENDING',
+    total_students INTEGER NOT NULL DEFAULT 0,
+    processed_students INTEGER NOT NULL DEFAULT 0,
+    high_risk_detected_count INTEGER NOT NULL DEFAULT 0,
+    error_summary TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    completed_at TIMESTAMPTZ
+);
+```
+```

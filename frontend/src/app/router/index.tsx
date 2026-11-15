@@ -82,7 +82,7 @@ export const router = createBrowserRouter([
       {
         path: 'academic-risk',
         element: (
-          <ProtectedRoute allowedRoles={['FACULTY', 'INSTITUTION_ADMIN', 'SUPER_ADMIN']}>
+          <ProtectedRoute allowedRoles={['STUDENT', 'FACULTY', 'INSTITUTION_ADMIN', 'SUPER_ADMIN']}>
             <AcademicRiskPage />
           </ProtectedRoute>
         ),

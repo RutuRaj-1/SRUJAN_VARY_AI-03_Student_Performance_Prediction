@@ -21,9 +21,9 @@
 |      v                                                                                |
 |  [PHASE 06]  Module 05: Learning Mastery & Performance Analytics <-- [COMPLETED]      |
 |      v                                                                                |
-|  [PHASE 07]  Module 06: Academic Risk Prediction Engine <-- [NEXT]                    |
+|  [PHASE 07]  Module 06: Academic Risk Prediction Engine <-- [COMPLETED]                |
 |      v                                                                                |
-|  [PHASE 08]  Module 07: Industry & Placement Readiness Intelligence                   |
+|  [PHASE 08]  Module 07: Personalized Academic Intervention Engine <-- [NEXT]          |
 |      v                                                                                |
 |  [PHASE 09]  Module 08: Personalized Academic Intervention Engine                     |
 |      v                                                                                |

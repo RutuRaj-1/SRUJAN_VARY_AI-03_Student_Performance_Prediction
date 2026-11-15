@@ -321,3 +321,54 @@ Base URL: `/api/v1/mastery`
 - `GET /api/v1/mastery/topics/{result_id}/excluded-evidence`
   - **Access:** `SUPER_ADMIN`, `INSTITUTION_ADMIN`, `FACULTY`, `STUDENT` (Self only)
   - **Description:** Audited list of excluded candidate records with deterministic exclusion reason codes.
+
+---
+
+## 7. Module 06: Academic Risk Prediction API
+
+Base URL: `/api/v1/risk`
+
+### 7.1 Risk Targets
+- `GET /api/v1/risk/targets`
+  - **Access:** `SUPER_ADMIN`, `INSTITUTION_ADMIN`, `FACULTY`, `STUDENT`
+  - **Query:** `subject_id` (optional UUID)
+  - **Description:** List configured risk targets, passing thresholds, and prediction horizons.
+- `POST /api/v1/risk/targets`
+  - **Access:** `SUPER_ADMIN`, `INSTITUTION_ADMIN`, `FACULTY`
+  - **Payload:** `AcademicRiskTargetCreate` (`subject_id`, `target_code`, `target_name`, `outcome_definition`, `positive_label_definition`, `passing_threshold_percentage`, `prediction_horizon_weeks`, `is_institution_policy`)
+  - **Description:** Configure a new academic risk milestone definition.
+- `GET /api/v1/risk/targets/{target_id}`
+  - **Access:** `SUPER_ADMIN`, `INSTITUTION_ADMIN`, `FACULTY`, `STUDENT`
+  - **Description:** Retrieve target details.
+
+### 7.2 Dataset Readiness & Governance
+- `GET /api/v1/risk/readiness`
+  - **Access:** `SUPER_ADMIN`, `INSTITUTION_ADMIN`, `FACULTY`
+  - **Query:** `subject_id`, `target_id`, `cutoff_date`
+  - **Description:** Evaluates labeled sample count and minority representation. Reports whether dataset is ready for ML training.
+
+### 7.3 Model Versions & Training
+- `POST /api/v1/risk/models/train`
+  - **Access:** `SUPER_ADMIN`, `INSTITUTION_ADMIN`, `FACULTY`
+  - **Query:** `subject_id`
+  - **Payload:** `RiskModelTrainRequest` (`target_id`, `model_type`, `version_tag`, `hyperparameters`, `cutoff_date`)
+  - **Description:** Fits ML model (Logistic Regression / Decision Tree) or auto-falls back to deterministic rules if dataset unready.
+- `GET /api/v1/risk/models`
+  - **Access:** `SUPER_ADMIN`, `INSTITUTION_ADMIN`, `FACULTY`
+  - **Query:** `target_id`
+  - **Description:** List registered model versions.
+- `POST /api/v1/risk/models/{model_version_id}/activate`
+  - **Access:** `SUPER_ADMIN`, `INSTITUTION_ADMIN`, `FACULTY`
+  - **Description:** Promotes a model version to active production inference.
+
+### 7.4 Inference & Explainability
+- `POST /api/v1/risk/predictions/generate`
+  - **Access:** `SUPER_ADMIN`, `INSTITUTION_ADMIN`, `FACULTY`
+  - **Payload:** `RiskPredictionGenerateRequest` (`subject_id`, `target_id`, `model_version_id`, `target_student_id`, `cutoff_date`)
+  - **Description:** Extracts time-bounded feature snapshot, executes inference, and generates grounded factor attributions.
+- `GET /api/v1/risk/students/{student_id}/subjects/{subject_id}/profile`
+  - **Access:** `SUPER_ADMIN`, `INSTITUTION_ADMIN`, `FACULTY`, `STUDENT` (Self only; Placement Officers barred)
+  - **Description:** Student risk profile, calibrated deficit probability, evidence sufficiency, and adverse factor list.
+- `GET /api/v1/risk/cohort/subjects/{subject_id}/summary`
+  - **Access:** `SUPER_ADMIN`, `INSTITUTION_ADMIN`, `FACULTY`
+  - **Description:** Cohort-wide risk distribution and student roster ledger.

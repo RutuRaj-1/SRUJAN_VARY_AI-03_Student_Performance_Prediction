@@ -136,3 +136,14 @@ MASTERY delegates user identity management to **Supabase Auth** while retaining 
 - **Learning Gap Discovery**: Discovers curriculum vulnerabilities, distinguishing low-performance deficits (`PERSISTENT_LOW_SCORE`) from unassessed curriculum gaps (`UNASSESSED_CRITICAL_TOPIC`).
 - **Longitudinal Progressions & Bloom's Radar**: Chronological tracking of assessment events paired with 6-level Bloom's Revised Taxonomy cognitive distribution.
 - **Mandatory Scientific Governance Non-Mastery Disclaimer**: Hardcoded disclaimers embedded across all schemas, API responses, and user interface panels prohibiting the conflation of assessment performance with internal student intellect.
+
+---
+
+## 9. Module 06: Academic Risk Prediction Engine Architecture (Phase 07)
+
+- **Target Definitions & Horizon Policies**: Modular institutional risk target framework (`academic_risk_targets`) with configurable outcome thresholds (e.g. Midterm Deficit < 40%, CIE Deficit < 50%) and actionable prediction horizons (3–6 weeks).
+- **Time-Bounded Feature Engineering**: Enforces strict observation cutoff boundaries (`recorded_at <= cutoff_date`). Slices a 12-dimensional feature store across continuous assessment averages, trajectories, topic mastery ratios, unresolved gaps, and verified attendance rates.
+- **Target Quarantine & Anti-Leakage Validation**: Explicit runtime validators reject temporal leakage and quarantine milestone targets (final exam scores) from entering predictive feature vectors.
+- **Dual-Model Hierarchy & Dataset Readiness Gate**: Evaluates historical labeled data against institutional readiness minimums (20 samples, 10% minority ratio). Transparently auto-falls back to deterministic expert rules when datasets are unready.
+- **Grounded Feature Attributions & Explainability**: Decomposes all inferences into directional adverse risk factors and protective factors with verified evidence provenance traces.
+- **Ethical AI Charter & Placement Firewall (§ 4.2)**: Placement Officers are structurally barred from accessing student risk scores via Supabase RLS and FastAPI RBAC guards. Student access is isolated strictly to self-records. Zero demographic or invasive biometric surveillance.

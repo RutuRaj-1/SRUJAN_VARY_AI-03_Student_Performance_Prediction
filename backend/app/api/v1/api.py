@@ -8,6 +8,7 @@ from app.api.v1.endpoints import (
     academic_data,
     assessments,
     mastery,
+    risk,
 )
 
 api_router = APIRouter()
@@ -32,6 +33,9 @@ api_router.include_router(assessments.router, prefix="/assessments", tags=["Modu
 
 # Module 05: Learning Mastery & Performance Analytics (Phase 06)
 api_router.include_router(mastery.router, prefix="/mastery", tags=["Module 05: Learning Mastery & Performance Analytics"])
+
+# Module 06: Academic Risk Prediction (Phase 07)
+api_router.include_router(risk.router, prefix="/risk", tags=["Module 06: Academic Risk Prediction"])
 
 # Domain router hooks (Phase 03 - Phase 08 will register endpoints here)
 # - Module 01: Academic Data Intelligence Hub (/academic)
