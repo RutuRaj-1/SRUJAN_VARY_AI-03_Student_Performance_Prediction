@@ -339,4 +339,72 @@ class RiskEvaluationType(str, Enum):
     HOLDOUT_TEST = "HOLDOUT_TEST"
 
 
+# =========================================================================
+# Phase 08: Personalized Academic Intervention Enums
+# =========================================================================
+
+class InterventionType(str, Enum):
+    TARGETED_REVISION = "TARGETED_REVISION"
+    PRACTICE_SET = "PRACTICE_SET"
+    REMEDIAL_SESSION = "REMEDIAL_SESSION"
+    FACULTY_CONSULTATION = "FACULTY_CONSULTATION"
+    PEER_STUDY_SESSION = "PEER_STUDY_SESSION"
+    LAB_PRACTICE = "LAB_PRACTICE"
+    FORMATIVE_ASSESSMENT = "FORMATIVE_ASSESSMENT"
+    STRUCTURED_STUDY_PLAN = "STRUCTURED_STUDY_PLAN"
+    LEARNING_RESOURCE = "LEARNING_RESOURCE"
+    EVIDENCE_COLLECTION = "EVIDENCE_COLLECTION"
+
+
+class InterventionPriority(str, Enum):
+    CRITICAL = "CRITICAL"
+    HIGH = "HIGH"
+    MEDIUM = "MEDIUM"
+    LOW = "LOW"
+
+
+class InterventionPlanStatus(str, Enum):
+    DRAFT = "DRAFT"
+    PENDING_REVIEW = "PENDING_REVIEW"
+    APPROVED = "APPROVED"
+    ACTIVE = "ACTIVE"
+    COMPLETED = "COMPLETED"
+    REJECTED = "REJECTED"
+    CANCELLED = "CANCELLED"
+    EXPIRED = "EXPIRED"
+
+
+class InterventionActionStatus(str, Enum):
+    PROPOSED = "PROPOSED"
+    ASSIGNED = "ASSIGNED"
+    IN_PROGRESS = "IN_PROGRESS"
+    SUBMITTED = "SUBMITTED"
+    VERIFIED = "VERIFIED"
+    DECLINED = "DECLINED"
+    CANCELLED = "CANCELLED"
+    OVERDUE = "OVERDUE"
+
+
+class InterventionRecommendationStatus(str, Enum):
+    ACTIVE = "ACTIVE"
+    ADOPTED_IN_PLAN = "ADOPTED_IN_PLAN"
+    DISMISSED = "DISMISSED"
+    SUPERSEDED = "SUPERSEDED"
+
+
+class InterventionEventType(str, Enum):
+    PLAN_CREATED = "PLAN_CREATED"
+    PLAN_SUBMITTED_FOR_REVIEW = "PLAN_SUBMITTED_FOR_REVIEW"
+    PLAN_APPROVED = "PLAN_APPROVED"
+    PLAN_REJECTED = "PLAN_REJECTED"
+    PLAN_ASSIGNED = "PLAN_ASSIGNED"
+    ACTION_STARTED = "ACTION_STARTED"
+    ACTION_SUBMITTED = "ACTION_SUBMITTED"
+    ACTION_VERIFIED = "ACTION_VERIFIED"
+    ACTION_DECLINED = "ACTION_DECLINED"
+    PLAN_COMPLETED = "PLAN_COMPLETED"
+    PLAN_CANCELLED = "PLAN_CANCELLED"
+
+
+
 

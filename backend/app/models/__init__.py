@@ -41,6 +41,12 @@ from app.models.enums import (
     RiskJobStatus,
     RiskPredictionStatus,
     RiskEvaluationType,
+    InterventionType,
+    InterventionPriority,
+    InterventionPlanStatus,
+    InterventionActionStatus,
+    InterventionRecommendationStatus,
+    InterventionEventType,
 )
 from app.models.institution import Institution, InstitutionMembership
 from app.models.profile import Profile
@@ -96,6 +102,15 @@ from app.models.risk import (
     AcademicRiskPrediction,
     AcademicRiskPredictionExplanation,
     RiskPredictionJob,
+)
+from app.models.interventions import (
+    InterventionTemplate,
+    AcademicInterventionRecommendation,
+    AcademicInterventionPlan,
+    AcademicInterventionAction,
+    InterventionProgressEvent,
+    InterventionOutcomeObservation,
+    DEFAULT_INTERVENTION_DISCLAIMER,
 )
 
 __all__ = [
@@ -187,4 +202,17 @@ __all__ = [
     "AcademicRiskPrediction",
     "AcademicRiskPredictionExplanation",
     "RiskPredictionJob",
+    "InterventionType",
+    "InterventionPriority",
+    "InterventionPlanStatus",
+    "InterventionActionStatus",
+    "InterventionRecommendationStatus",
+    "InterventionEventType",
+    "InterventionTemplate",
+    "AcademicInterventionRecommendation",
+    "AcademicInterventionPlan",
+    "AcademicInterventionAction",
+    "InterventionProgressEvent",
+    "InterventionOutcomeObservation",
+    "DEFAULT_INTERVENTION_DISCLAIMER",
 ]

@@ -130,16 +130,20 @@ To prevent tight coupling and tangled dependencies across the seven modules, MAS
 
 ---
 
-### Module 06: Personalized Intervention & Student Growth
-- **Purpose:** Prescriptive recovery roadmaps and longitudinal progress monitoring.
+### Module 06: Personalized Intervention & Student Growth (Implemented & Verified — Phase 08)
+- **Purpose:** Transform verified academic evidence, topic mastery gaps, and predictive risk indicators into actionable, measurable, faculty-reviewed academic support plans.
 - **Responsibilities:**
-  - AI-assisted personalized study plan generation targeting identified weak topics.
-  - Prescribing remedial learning activities (targeted readings, practice problems, micro-labs).
-  - Faculty or mentor approval workflow before student dispatch.
-  - Mentorship assignment and progress check-in tracking.
-  - Targeted reassessment and longitudinal mastery delta evaluation.
-- **Dependencies:** Module 05 (`risk_alerts`), Module 04 (`topic_mastery_scores`), AI Service.
-- **Shared With Other Modules:** Updates mastery confidence scores in Module 04 upon successful remedial reassessment.
+  - Multi-tiered recommendation engine generating evidence-grounded candidate proposals (`academic_intervention_recommendations`).
+  - Specialized insufficient-evidence handling: recommending low-stakes diagnostic evaluations (`FORMATIVE_ASSESSMENT`) rather than remedial failure assumptions.
+  - Institutional intervention template catalog (`intervention_templates`) with effort estimates and blueprint actions.
+  - Structured academic support plans (`academic_intervention_plans`) governed by explicit state transitions (`DRAFT` $\rightarrow$ `PENDING_REVIEW` $\rightarrow$ `APPROVED` $\rightarrow$ `ACTIVE` $\rightarrow$ `COMPLETED`).
+  - Action item tracking (`academic_intervention_actions`) with student evidence submissions and faculty verifications.
+  - Append-only progress audit ledger (`intervention_progress_events`).
+  - Observational follow-up monitoring (`intervention_outcome_observations`) strictly adhering to non-causal scientific governance.
+  - Supabase Row-Level Security and FastAPI RBAC enforcing student self-isolation and Placement Officer quarantine (§ 4.2).
+- **Dependencies:** AI Syllabus Intelligence (Phase 03 topics and CLOs), Academic Data Intelligence Hub (Phase 04 attendance and assessment records), Intelligent Assessment Engine (Phase 05 attempts), Learning Mastery Analytics (Phase 06 topic mastery and gap findings), Academic Risk Engine (Phase 07 predictions).
+- **Shared With Other Modules:** Closes the loop on academic difficulty. Exposes intervention engagement and completion outcomes to student progress tracking.
+- **Invariant:** Interventions never automate high-stakes disciplinary actions, grade penalties, or financial aid decisions. Observes strict human-in-the-loop faculty review. Never makes unsubstantiated causal claims. Observes Placement Officer quarantine.
 
 ---
 

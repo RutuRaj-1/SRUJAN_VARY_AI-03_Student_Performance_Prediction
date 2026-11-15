@@ -147,3 +147,15 @@ MASTERY delegates user identity management to **Supabase Auth** while retaining 
 - **Dual-Model Hierarchy & Dataset Readiness Gate**: Evaluates historical labeled data against institutional readiness minimums (20 samples, 10% minority ratio). Transparently auto-falls back to deterministic expert rules when datasets are unready.
 - **Grounded Feature Attributions & Explainability**: Decomposes all inferences into directional adverse risk factors and protective factors with verified evidence provenance traces.
 - **Ethical AI Charter & Placement Firewall (§ 4.2)**: Placement Officers are structurally barred from accessing student risk scores via Supabase RLS and FastAPI RBAC guards. Student access is isolated strictly to self-records. Zero demographic or invasive biometric surveillance.
+
+---
+
+## 10. Module 07: Personalized Academic Intervention Engine Architecture (Phase 08)
+
+- **Intervention Template Catalog**: Reusable institutional support blueprints (`intervention_templates`) covering targeted revision, adaptive practice sets, remedial workshops, 1-on-1 faculty consultations, and formative diagnostic evaluations.
+- **Evidence-Grounded Recommendation Engine**: Multi-tiered decision rules translating Phase 06 topic gaps and Phase 07 adverse risk factors into structured candidate recommendations (`academic_intervention_recommendations`).
+- **Insufficient Evidence Handling**: When continuous assessment evidence is insufficient ($< 2$ records), the engine strictly avoids remedial/failure assumptions and recommends a low-stakes diagnostic probe (`FORMATIVE_ASSESSMENT`).
+- **Human-in-the-Loop Plan Lifecycle**: Structured state machine (`DRAFT` $\rightarrow$ `PENDING_REVIEW` $\rightarrow$ `APPROVED` $\rightarrow$ `ACTIVE` $\rightarrow$ `COMPLETED`). Recommendations require explicit faculty review before becoming official assignments.
+- **Granular Action Tasks & Append-Only Progress Audit**: Actionable tasks (`academic_intervention_actions`) with instructions, effort estimates, student submission links, and faculty verification. All status changes log immutable events in `intervention_progress_events`.
+- **Non-Causal Observational Follow-Up**: Subsequent assessment outcomes are recorded as empirical observations (`intervention_outcome_observations`) without unsupported causal claims.
+- **Placement Officer Quarantine (§ 4.2)**: Placement Officers are strictly barred from all intervention data to eliminate recruitment bias.

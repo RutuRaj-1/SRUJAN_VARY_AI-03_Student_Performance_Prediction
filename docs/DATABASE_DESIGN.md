@@ -798,4 +798,158 @@ CREATE TABLE risk_prediction_jobs (
     completed_at TIMESTAMPTZ
 );
 ```
+
+---
+
+## 9. Phase 08: Personalized Academic Intervention Tables
+
+### `intervention_templates`
+Reusable and institution-approved intervention catalog blueprints.
+```sql
+CREATE TABLE intervention_templates (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    institution_id UUID NOT NULL REFERENCES institutions(id) ON DELETE CASCADE,
+    subject_id UUID REFERENCES academic_subjects(id) ON DELETE SET NULL,
+    template_code VARCHAR(64) NOT NULL,
+    template_name VARCHAR(255) NOT NULL,
+    intervention_type VARCHAR(50) NOT NULL DEFAULT 'TARGETED_REVISION',
+    description TEXT,
+    target_level VARCHAR(30) NOT NULL DEFAULT 'TOPIC',
+    suggested_duration_hours FLOAT NOT NULL DEFAULT 2.0,
+    suggested_completion_days INTEGER NOT NULL DEFAULT 7,
+    recommended_actions_template JSONB NOT NULL DEFAULT '[]'::jsonb,
+    required_resources JSONB NOT NULL DEFAULT '[]'::jsonb,
+    expected_evidence_type VARCHAR(100),
+    requires_faculty_review BOOLEAN NOT NULL DEFAULT true,
+    is_active BOOLEAN NOT NULL DEFAULT true,
+    created_by_profile_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_intervention_template_inst_code UNIQUE (institution_id, template_code)
+);
+```
+
+### `academic_intervention_recommendations`
+Evidence-grounded candidate recommendations produced by the recommendation engine.
+```sql
+CREATE TABLE academic_intervention_recommendations (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    institution_id UUID NOT NULL REFERENCES institutions(id) ON DELETE CASCADE,
+    student_id UUID NOT NULL REFERENCES student_academic_profiles(id) ON DELETE CASCADE,
+    subject_id UUID NOT NULL REFERENCES academic_subjects(id) ON DELETE CASCADE,
+    topic_id UUID REFERENCES syllabus_topics(id) ON DELETE SET NULL,
+    learning_outcome_id UUID REFERENCES learning_outcomes(id) ON DELETE SET NULL,
+    risk_prediction_id UUID REFERENCES academic_risk_predictions(id) ON DELETE SET NULL,
+    learning_gap_id UUID REFERENCES learning_gap_findings(id) ON DELETE SET NULL,
+    template_id UUID REFERENCES intervention_templates(id) ON DELETE SET NULL,
+    recommendation_type VARCHAR(50) NOT NULL DEFAULT 'TARGETED_REVISION',
+    priority VARCHAR(20) NOT NULL DEFAULT 'MEDIUM',
+    rationale TEXT NOT NULL,
+    source_evidence_summary JSONB NOT NULL DEFAULT '{}'::jsonb,
+    evidence_sufficiency VARCHAR(30) NOT NULL DEFAULT 'MODERATE',
+    proposed_action_title VARCHAR(255) NOT NULL,
+    proposed_action_description TEXT NOT NULL,
+    suggested_duration_days INTEGER NOT NULL DEFAULT 7,
+    status VARCHAR(30) NOT NULL DEFAULT 'ACTIVE',
+    scientific_disclaimer TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+### `academic_intervention_plans`
+Structured, faculty-reviewed academic support plan assigned to a student.
+```sql
+CREATE TABLE academic_intervention_plans (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    institution_id UUID NOT NULL REFERENCES institutions(id) ON DELETE CASCADE,
+    student_id UUID NOT NULL REFERENCES student_academic_profiles(id) ON DELETE CASCADE,
+    subject_id UUID NOT NULL REFERENCES academic_subjects(id) ON DELETE CASCADE,
+    topic_id UUID REFERENCES syllabus_topics(id) ON DELETE SET NULL,
+    learning_outcome_id UUID REFERENCES learning_outcomes(id) ON DELETE SET NULL,
+    recommendation_id UUID REFERENCES academic_intervention_recommendations(id) ON DELETE SET NULL,
+    plan_title VARCHAR(255) NOT NULL,
+    learning_objective TEXT NOT NULL,
+    plan_status VARCHAR(30) NOT NULL DEFAULT 'DRAFT',
+    assigned_faculty_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
+    reviewed_by_faculty_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
+    reviewed_at TIMESTAMPTZ,
+    faculty_review_notes TEXT,
+    start_date TIMESTAMPTZ,
+    target_completion_date TIMESTAMPTZ,
+    actual_completion_date TIMESTAMPTZ,
+    expected_outcome_evidence TEXT,
+    scientific_disclaimer TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+### `academic_intervention_actions`
+Individual actionable tasks within an academic intervention plan.
+```sql
+CREATE TABLE academic_intervention_actions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    institution_id UUID NOT NULL REFERENCES institutions(id) ON DELETE CASCADE,
+    plan_id UUID NOT NULL REFERENCES academic_intervention_plans(id) ON DELETE CASCADE,
+    action_order INTEGER NOT NULL DEFAULT 1,
+    action_title VARCHAR(255) NOT NULL,
+    action_type VARCHAR(50) NOT NULL DEFAULT 'TARGETED_REVISION',
+    instructions TEXT NOT NULL,
+    resource_references JSONB NOT NULL DEFAULT '[]'::jsonb,
+    estimated_effort_hours FLOAT NOT NULL DEFAULT 1.0,
+    due_date TIMESTAMPTZ,
+    action_status VARCHAR(30) NOT NULL DEFAULT 'PROPOSED',
+    student_completion_notes TEXT,
+    student_submission_url VARCHAR(512),
+    submitted_at TIMESTAMPTZ,
+    faculty_feedback TEXT,
+    verified_by_faculty_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
+    verified_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+### `intervention_progress_events`
+Append-only chronological audit ledger for all plan and action status changes.
+```sql
+CREATE TABLE intervention_progress_events (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    institution_id UUID NOT NULL REFERENCES institutions(id) ON DELETE CASCADE,
+    plan_id UUID NOT NULL REFERENCES academic_intervention_plans(id) ON DELETE CASCADE,
+    action_id UUID REFERENCES academic_intervention_actions(id) ON DELETE SET NULL,
+    actor_profile_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
+    event_type VARCHAR(50) NOT NULL,
+    previous_status VARCHAR(30),
+    new_status VARCHAR(30) NOT NULL,
+    event_notes TEXT,
+    event_metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+### `intervention_outcome_observations`
+Post-intervention observational evidence linking subsequent assessment or mastery results.
+```sql
+CREATE TABLE intervention_outcome_observations (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    institution_id UUID NOT NULL REFERENCES institutions(id) ON DELETE CASCADE,
+    plan_id UUID NOT NULL REFERENCES academic_intervention_plans(id) ON DELETE CASCADE,
+    student_id UUID NOT NULL REFERENCES student_academic_profiles(id) ON DELETE CASCADE,
+    subject_id UUID NOT NULL REFERENCES academic_subjects(id) ON DELETE CASCADE,
+    topic_id UUID REFERENCES syllabus_topics(id) ON DELETE SET NULL,
+    learning_outcome_id UUID REFERENCES learning_outcomes(id) ON DELETE SET NULL,
+    baseline_mastery_percentage FLOAT,
+    followup_assessment_id UUID REFERENCES academic_assessments(id) ON DELETE SET NULL,
+    followup_score_obtained FLOAT,
+    followup_maximum_marks FLOAT,
+    followup_mastery_percentage FLOAT,
+    observation_notes TEXT,
+    scientific_disclaimer TEXT NOT NULL,
+    observed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+```
 ```

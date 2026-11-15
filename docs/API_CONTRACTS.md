@@ -372,3 +372,68 @@ Base URL: `/api/v1/risk`
 - `GET /api/v1/risk/cohort/subjects/{subject_id}/summary`
   - **Access:** `SUPER_ADMIN`, `INSTITUTION_ADMIN`, `FACULTY`
   - **Description:** Cohort-wide risk distribution and student roster ledger.
+
+---
+
+## 8. Module 07: Personalized Academic Intervention API
+
+Base URL: `/api/v1/interventions`
+
+### 8.1 Intervention Templates
+- `GET /api/v1/interventions/templates`
+  - **Access:** `STUDENT`, `FACULTY`, `INSTITUTION_ADMIN`, `SUPER_ADMIN`
+  - **Query:** `subject_id` (optional), `intervention_type` (optional)
+  - **Description:** List approved intervention templates.
+- `POST /api/v1/interventions/templates`
+  - **Access:** `FACULTY`, `INSTITUTION_ADMIN`, `SUPER_ADMIN`
+  - **Payload:** `InterventionTemplateCreate` (`template_code`, `template_name`, `intervention_type`, `target_level`, `suggested_duration_hours`, `suggested_completion_days`, `recommended_actions_template`, `required_resources`)
+  - **Description:** Create an institutional intervention blueprint.
+
+### 8.2 Recommendations
+- `POST /api/v1/interventions/recommendations/generate`
+  - **Access:** `FACULTY`, `INSTITUTION_ADMIN`, `SUPER_ADMIN`
+  - **Payload:** `InterventionRecommendationGenerateRequest` (`student_id`, `subject_id`, `topic_id`, `template_id`)
+  - **Description:** Synthesizes Phase 06 learning gaps, unassessed topics, and Phase 07 risk factors into candidate recommendations.
+- `GET /api/v1/interventions/recommendations`
+  - **Access:** `STUDENT` (Self only), `FACULTY`, `INSTITUTION_ADMIN`, `SUPER_ADMIN`
+  - **Query:** `student_id`, `subject_id`, `status`
+  - **Description:** List recommendations.
+
+### 8.3 Intervention Plans
+- `POST /api/v1/interventions/plans`
+  - **Access:** `FACULTY`, `INSTITUTION_ADMIN`, `SUPER_ADMIN`
+  - **Payload:** `InterventionPlanCreate` (`student_id`, `subject_id`, `topic_id`, `recommendation_id`, `plan_title`, `learning_objective`, `target_completion_date`, `initial_actions`)
+  - **Description:** Author an academic intervention plan queued for faculty review.
+- `GET /api/v1/interventions/plans`
+  - **Access:** `STUDENT` (Self only; approved/active/completed only), `FACULTY`, `ADMIN`
+  - **Query:** `student_id`, `subject_id`, `status`
+  - **Description:** List intervention plans.
+- `GET /api/v1/interventions/plans/{plan_id}`
+  - **Access:** `STUDENT` (Self only), `FACULTY`, `ADMIN`
+  - **Description:** Detailed plan inspector with action items and progress event history.
+- `POST /api/v1/interventions/plans/{plan_id}/review`
+  - **Access:** `FACULTY`, `INSTITUTION_ADMIN`, `SUPER_ADMIN`
+  - **Payload:** `InterventionPlanReviewRequest` (`decision`: "APPROVE" | "REJECT", `review_notes`)
+  - **Description:** Faculty review checkpoint authorizing or rejecting plan.
+- `POST /api/v1/interventions/plans/{plan_id}/assign`
+  - **Access:** `FACULTY`, `INSTITUTION_ADMIN`, `SUPER_ADMIN`
+  - **Description:** Promotes plan to ACTIVE and dispatches actions to student.
+
+### 8.4 Action Tasks & Progress
+- `POST /api/v1/interventions/actions/{action_id}/status`
+  - **Access:** `STUDENT` (Start work, submit evidence), `FACULTY` (Verify completion)
+  - **Payload:** `InterventionActionStatusUpdate` (`new_status`, `student_completion_notes`, `student_submission_url`, `faculty_feedback`)
+  - **Description:** Updates action status with append-only progress event logging.
+
+### 8.5 Outcomes & Dashboards
+- `POST /api/v1/interventions/plans/{plan_id}/outcomes`
+  - **Access:** `FACULTY`, `ADMIN`
+  - **Payload:** `InterventionOutcomeCreate` (`baseline_mastery_percentage`, `followup_assessment_id`, `followup_score_obtained`, `followup_maximum_marks`, `observation_notes`)
+  - **Description:** Records post-intervention observational evidence.
+- `GET /api/v1/interventions/dashboard/faculty`
+  - **Access:** `FACULTY`, `ADMIN`
+  - **Query:** `subject_id`
+  - **Description:** Aggregate faculty intervention metrics and priority queues.
+- `GET /api/v1/interventions/dashboard/student`
+  - **Access:** `STUDENT`
+  - **Description:** Personalized student workspace with assigned actions checklist.
