@@ -162,3 +162,21 @@ To prevent tight coupling and tangled dependencies across the seven modules, MAS
 - **Shared With Other Modules:** Provides unpolluted industry readiness and practical portfolio evidence to Placement Officers and students.
 - **Invariant:** Never compresses student capability into an arbitrary composite employability percentage. Missing evidence is never conflated with incompetence. Placement Officer quarantine strictly preserved.
 
+---
+
+### Module 09: Unified Intelligence Dashboard & Cross-Module Integration (Implemented & Verified — Phase 10)
+- **Purpose:** Cohesive, role-aware synthesis across all underlying modules without duplicating business logic, fabricating composite scores, or breaching tenant/privacy firewalls.
+- **Responsibilities:**
+  - Role-specific aggregation pipelines:
+    - `StudentDashboardService`: Aggregates profile header, verified academic records, topic mastery, explainable risk with protective factors, active interventions, and career readiness alignments.
+    - `FacultyDashboardService`: Aggregates teaching load, student mastery distribution, risk cohorts needing support, and review checkpoints.
+    - `InstitutionDashboardService`: Executive multi-metric institutional health overview (enrollment, curriculum coverage, CLO attainment, risk distribution, intervention efficacy).
+    - `PlacementDashboardService`: Career readiness matching, candidate discovery pipeline, and institutional skill shortages with active defense-in-depth firewalling.
+    - `AdminDashboardService`: Platform tenant health, module utilization metrics, and append-only audit pulse.
+  - Strict Placement Officer Privacy Firewall: Complete programmatic (`_assert_not_placement_officer`) and endpoint-level blocking against academic risk (Module 05) and confidential interventions (Module 06).
+  - Explicit Data Freshness & Provenance Metadata: Every analytical card carries source module provenance, calculated timestamps, and freshness status (`FRESH`, `STALE`, `CACHED`).
+  - Dynamic Perspective Switcher: Administrative users (`SUPER_ADMIN`, `INSTITUTION_ADMIN`, `FACULTY`) can inspect role-specific views within authorized scopes.
+- **Dependencies:** Consumes read-only APIs and query pipelines from Modules 01–08.
+- **Invariant:** Read-only aggregation layer. Never invents synthetic single-number student scores (e.g. "Overall Quality Index"). Never bypasses tenant scoping or row-level permissions.
+
+

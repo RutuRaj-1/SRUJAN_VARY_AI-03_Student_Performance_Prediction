@@ -48,6 +48,51 @@ export const router = createBrowserRouter([
         element: <DashboardPage />,
       },
       {
+        path: 'dashboard',
+        children: [
+          {
+            path: 'student',
+            element: (
+              <ProtectedRoute allowedRoles={['STUDENT', 'FACULTY', 'INSTITUTION_ADMIN', 'SUPER_ADMIN']}>
+                <DashboardPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: 'faculty',
+            element: (
+              <ProtectedRoute allowedRoles={['FACULTY', 'INSTITUTION_ADMIN', 'SUPER_ADMIN']}>
+                <DashboardPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: 'institution',
+            element: (
+              <ProtectedRoute allowedRoles={['INSTITUTION_ADMIN', 'SUPER_ADMIN']}>
+                <DashboardPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: 'placement',
+            element: (
+              <ProtectedRoute allowedRoles={['PLACEMENT_OFFICER', 'INSTITUTION_ADMIN', 'SUPER_ADMIN', 'FACULTY']}>
+                <DashboardPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: 'admin',
+            element: (
+              <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'INSTITUTION_ADMIN']}>
+                <DashboardPage />
+              </ProtectedRoute>
+            ),
+          },
+        ],
+      },
+      {
         path: 'academic-data',
         element: (
           <ProtectedRoute allowedRoles={['STUDENT', 'FACULTY', 'INSTITUTION_ADMIN', 'SUPER_ADMIN']}>

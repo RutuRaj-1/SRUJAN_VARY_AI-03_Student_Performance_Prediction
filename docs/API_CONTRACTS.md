@@ -511,3 +511,91 @@ Base URL: `/api/v1/interventions`
   - **Payload:** `CareerDevelopmentRecommendationUpdate`
   - **Description:** Track roadmap execution.
 
+---
+
+## 10. Module 09: Unified Intelligence Dashboard Contracts (Phase 10)
+
+Cross-module aggregation and role-aware analytical overviews adhering to tenant scoping, zero synthetic score fabrication, and the strict Placement Officer privacy firewall.
+
+### 10.1 Student Intelligence Dashboard
+- `GET /api/v1/dashboard/student/overview`
+  - **Access:** `STUDENT` (Self only), `FACULTY`, `INSTITUTION_ADMIN`, `SUPER_ADMIN` (Strictly blocked for `PLACEMENT_OFFICER` with 403)
+  - **Query:** `student_id` (optional for staff/admins, defaults to authenticated user's student profile)
+  - **Description:** Returns holistic student intelligence combining academic performance records, mastery analytics, explainable risk prediction with protective factors, active intervention plans, and career readiness alignments.
+- `GET /api/v1/dashboard/student/academic-performance`
+  - **Access:** `STUDENT` (Self), `FACULTY`, `ADMIN` (Blocked for `PLACEMENT_OFFICER`)
+  - **Query:** `student_id`
+  - **Description:** Aggregates verified course marks, total evaluations, and attendance rates with data provenance timestamps.
+- `GET /api/v1/dashboard/student/mastery-summary`
+  - **Access:** `STUDENT` (Self), `FACULTY`, `ADMIN` (Blocked for `PLACEMENT_OFFICER`)
+  - **Query:** `student_id`
+  - **Description:** Breakdown of demonstrated, developing, and insufficient evidence syllabus topics with CLO attainment percentage.
+- `GET /api/v1/dashboard/student/risk-summary`
+  - **Access:** `STUDENT` (Self), `FACULTY`, `ADMIN` (Strictly blocked for `PLACEMENT_OFFICER` with 403)
+  - **Query:** `student_id`
+  - **Description:** Explainable academic risk classification, probability, adverse and protective factors, and ethics disclaimer.
+- `GET /api/v1/dashboard/student/intervention-summary`
+  - **Access:** `STUDENT` (Self), `FACULTY`, `ADMIN` (Strictly blocked for `PLACEMENT_OFFICER` with 403)
+  - **Query:** `student_id`
+  - **Description:** Active, completed, and pending intervention plan counts, high-priority actions, and faculty review checkpoints.
+- `GET /api/v1/dashboard/student/career-summary`
+  - **Access:** `STUDENT` (Self), `FACULTY`, `ADMIN`, `PLACEMENT_OFFICER`
+  - **Query:** `student_id`
+  - **Description:** Career role readiness alignments, verified project counts, demonstrated competencies, and active skill gaps.
+
+### 10.2 Faculty Course Intelligence Dashboard
+- `GET /api/v1/dashboard/faculty/overview`
+  - **Access:** `FACULTY`, `INSTITUTION_ADMIN`, `SUPER_ADMIN`
+  - **Query:** `subject_id` (optional filter)
+  - **Description:** Faculty teaching intelligence across assigned courses, enrolled students, mastery distribution, risk cohorts, pending interventions, and practical project verifications.
+- `GET /api/v1/dashboard/faculty/course-distribution`
+  - **Access:** `FACULTY`, `ADMIN`
+  - **Query:** `subject_id`
+  - **Description:** Subject-level student mastery tier distributions and average assessment score summaries.
+- `GET /api/v1/dashboard/faculty/risk-cohort`
+  - **Access:** `FACULTY`, `ADMIN`
+  - **Query:** `subject_id`
+  - **Description:** Actionable list of high and moderate risk students requiring targeted pedagogical support.
+- `GET /api/v1/dashboard/faculty/pending-reviews`
+  - **Access:** `FACULTY`, `ADMIN`
+  - **Description:** Workflow inbox of intervention plans awaiting faculty authorization and student projects pending verification.
+
+### 10.3 Institution Executive Dashboard
+- `GET /api/v1/dashboard/institution/overview`
+  - **Access:** `INSTITUTION_ADMIN`, `SUPER_ADMIN`
+  - **Query:** `department`, `academic_year`
+  - **Description:** Institution-wide executive intelligence across total enrollment, curriculum coverage, CLO attainment, risk distribution, intervention efficacy rates, and industry alignment stats.
+- `GET /api/v1/dashboard/institution/program-benchmarks`
+  - **Access:** `INSTITUTION_ADMIN`, `SUPER_ADMIN`
+  - **Query:** `department`
+  - **Description:** Program and department-level aggregated attainment benchmarks and accreditation readiness indicators.
+- `GET /api/v1/dashboard/institution/intervention-effectiveness`
+  - **Access:** `INSTITUTION_ADMIN`, `SUPER_ADMIN`
+  - **Description:** Quantified efficacy of completed academic intervention plans with baseline vs. follow-up mastery gains.
+
+### 10.4 Placement Officer Career & Skill Intelligence Dashboard (Firewalled)
+- `GET /api/v1/dashboard/placement/overview`
+  - **Access:** `PLACEMENT_OFFICER`, `INSTITUTION_ADMIN`, `SUPER_ADMIN`
+  - **Query:** `role_id`, `department`
+  - **Description:** Ethical career intelligence aggregating role profile demand, industry skill alignments, verified practical portfolios, and institutional skill shortages. Zero exposure of academic risk, failed grades, or confidential interventions.
+- `GET /api/v1/dashboard/placement/candidate-pipeline`
+  - **Access:** `PLACEMENT_OFFICER`, `INSTITUTION_ADMIN`, `SUPER_ADMIN`
+  - **Query:** `role_id` (required), `min_alignment_status`
+  - **Description:** Candidate search matching students to career roles strictly based on verified competency mastery and project portfolios.
+- `GET /api/v1/dashboard/placement/institutional-skill-gaps`
+  - **Access:** `PLACEMENT_OFFICER`, `INSTITUTION_ADMIN`, `SUPER_ADMIN`
+  - **Query:** `department`
+  - **Description:** Macro industry skill shortages identified across student cohorts to advise curriculum review committees.
+
+### 10.5 Platform Super-Administrator Dashboard
+- `GET /api/v1/dashboard/admin/overview`
+  - **Access:** `SUPER_ADMIN`
+  - **Description:** Platform health overview across registered institutions, multi-tenant user counts, module utilization stats, and audit event volume.
+- `GET /api/v1/dashboard/admin/tenant-summary`
+  - **Access:** `SUPER_ADMIN`
+  - **Description:** Multi-tenant usage distribution across active institutions.
+- `GET /api/v1/dashboard/admin/audit-pulse`
+  - **Access:** `SUPER_ADMIN`
+  - **Query:** `limit` (default: 50)
+  - **Description:** Real-time chronological audit event log capturing administrative changes and security checkpoints.
+

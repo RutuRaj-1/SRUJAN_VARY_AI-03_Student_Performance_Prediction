@@ -11,6 +11,7 @@ from app.api.v1.endpoints import (
     risk,
     interventions,
     career,
+    dashboard,
 )
 
 api_router = APIRouter()
@@ -44,6 +45,9 @@ api_router.include_router(interventions.router, prefix="/interventions", tags=["
 
 # Module 08: Career Readiness & Industry Skill Gap Intelligence (Phase 09)
 api_router.include_router(career.router, prefix="/career-readiness", tags=["Module 08: Career Readiness & Industry Skill Gap Intelligence"])
+
+# Module 09: Unified Intelligence Dashboard & Cross-Module Integration (Phase 10)
+api_router.include_router(dashboard.router, prefix="/dashboard", tags=["Phase 10: Unified Intelligence Dashboard"])
 
 # Domain router hooks (Phase 03 - Phase 08 will register endpoints here)
 # - Module 01: Academic Data Intelligence Hub (/academic)
