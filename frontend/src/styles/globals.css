@@ -4,12 +4,93 @@
 
 :root {
   color-scheme: light;
+
+  --background: #F7FAF9;
+  --surface: #FFFFFF;
+  --surface-subtle: #EEF8F7;
+  --surface-muted: #EFF5F3;
+
+  --brand-primary: #237277;
+  --brand-deep: #123E40;
+  --brand-dark: #18575A;
+  --brand-accent: #2D8E92;
+  --brand-mint: #D9F0EE;
+
+  --text-primary: #172825;
+  --text-secondary: #40524E;
+  --text-muted: #687A75;
+
+  --border: #DCE6E2;
+  --border-strong: #BDCEC8;
+
+  --success: #169C73;
+  --success-soft: #E8F7F1;
+
+  --warning: #D89B22;
+  --warning-soft: #FFF6DF;
+
+  --danger: #D96559;
+  --danger-soft: #FDECEA;
+
+  --info: #2563EB;
+  --info-soft: #EAF2FF;
+
+  --ai: #7457C8;
+  --ai-soft: #F2EEFF;
+
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
-  background-color: #f8fafc;
-  color: #0f172a;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background-color: var(--background);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Tabular figures for data metrics */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #F7FAF9;
+}
+::-webkit-scrollbar-thumb {
+  background: #BDCEC8;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #237277;
+}
+
+/* Brutalist container utility */
+.brutalist-card {
+  background-color: #FFFFFF;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 1px 2px 0 rgba(18, 62, 64, 0.04);
+}
+
+.brutalist-card-hover {
+  transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.brutalist-card-hover:hover {
+  border-color: var(--brand-accent);
+  box-shadow: 0 4px 6px -1px rgba(18, 62, 64, 0.08);
 }

@@ -2,7 +2,7 @@ import React from 'react';
 import { cn } from '@/utils/cn';
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
   size?: 'sm' | 'md' | 'lg';
   isLoading?: boolean;
 }
@@ -16,18 +16,19 @@ export const Button: React.FC<ButtonProps> = ({
   disabled,
   ...props
 }) => {
-  const baseStyles = 'inline-flex items-center justify-center font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
+  const baseStyles = 'inline-flex items-center justify-center font-medium rounded-[4px] transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed';
   
   const variants = {
-    primary: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 shadow-sm',
-    secondary: 'bg-slate-100 text-slate-800 hover:bg-slate-200 focus:ring-slate-400',
-    outline: 'border border-slate-300 text-slate-700 hover:bg-slate-50 focus:ring-blue-500',
-    ghost: 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 focus:ring-slate-400',
+    primary: 'bg-[#237277] text-white hover:bg-[#18575A] focus:ring-[#237277] shadow-sm',
+    secondary: 'bg-[#EFF5F3] text-[#172825] hover:bg-[#D9F0EE] focus:ring-[#237277] border border-[#DCE6E2]',
+    outline: 'border border-[#BDCEC8] text-[#172825] bg-white hover:bg-[#EEF8F7] focus:ring-[#237277]',
+    ghost: 'text-[#40524E] hover:bg-[#EEF8F7] hover:text-[#123E40] focus:ring-[#237277]',
+    danger: 'bg-[#D96559] text-white hover:bg-[#b84e44] focus:ring-[#D96559] shadow-sm',
   };
 
   const sizes = {
     sm: 'text-xs px-2.5 py-1.5',
-    md: 'text-sm px-4 py-2',
+    md: 'text-sm px-3.5 py-2',
     lg: 'text-base px-5 py-2.5',
   };
 

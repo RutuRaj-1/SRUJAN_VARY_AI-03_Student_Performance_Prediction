@@ -147,29 +147,29 @@ export const MasteryPage: React.FC = () => {
       {/* ===================================================================== */}
       {/* HEADER SECTION */}
       {/* ===================================================================== */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-sm">
+      <div className="bg-[#123E40] border border-[#18575A] rounded-[6px] p-6 shadow-subtle text-white">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 text-indigo-400 text-sm font-semibold uppercase tracking-wider mb-1">
-              <Compass className="w-4 h-4" />
-              Module 05: Phase 06/11
+            <div className="flex items-center gap-2 text-[#D9F0EE] text-xs font-semibold uppercase tracking-wider mb-1 font-mono">
+              <Compass className="w-4 h-4 text-[#2D8E92]" />
+              Module 04: Evidence-Based Learning Mastery
             </div>
-            <h1 className="text-2xl font-bold text-white tracking-tight">
+            <h1 className="text-2xl font-bold text-white tracking-tight font-sans">
               Learning Mastery & Performance Analytics
             </h1>
-            <p className="text-slate-400 text-sm mt-1">
+            <p className="text-slate-300 text-xs mt-1">
               Evidence-based topic mastery, learning outcome attainment, and explainable performance intelligence derived from verified curriculum and assessment evidence.
             </p>
           </div>
 
           <div className="flex items-center gap-3">
-            <span className="px-3 py-1 bg-indigo-950 text-indigo-300 border border-indigo-800 rounded-full text-xs font-semibold">
+            <span className="px-2.5 py-1 bg-[#EEF8F7] text-[#123E40] rounded-[3px] text-xs font-semibold border border-[#BDCEC8]">
               Role: {profile?.role || 'STUDENT'}
             </span>
             {isFacultyOrAdmin && (
               <button
                 onClick={() => setShowAnalyzeModal(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold transition-colors"
+                className="flex items-center gap-2 px-3.5 py-1.5 bg-[#237277] hover:bg-[#18575A] text-white rounded-[4px] text-xs font-semibold transition-colors shadow-sm"
               >
                 <Play className="w-3.5 h-3.5" /> Run Mastery Analysis
               </button>

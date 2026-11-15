@@ -242,10 +242,10 @@ export const InterventionPage: React.FC = () => {
               <Sparkles className="h-6 w-6" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                Personalized Academic Interventions
-                <span className="text-xs font-medium px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
-                  Module 07
+              <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2 font-sans">
+                Personalized Academic Intervention
+                <span className="text-xs font-medium px-2 py-0.5 rounded-[3px] bg-[#EEF8F7] text-[#123E40] border border-[#BDCEC8] font-mono">
+                  Module 06
                 </span>
               </h1>
               <p className="text-sm text-muted-foreground mt-0.5">

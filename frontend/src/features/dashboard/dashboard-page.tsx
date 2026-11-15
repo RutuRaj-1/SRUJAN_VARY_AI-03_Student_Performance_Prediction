@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import {
@@ -7,61 +7,39 @@ import {
   AlertTriangle,
   CheckCircle2,
   ArrowRight,
-  ShieldCheck,
   Briefcase,
   RefreshCw,
-  AlertCircle,
   Lock,
 } from 'lucide-react';
 
 import { useAuth } from '@/context/auth-context';
+import { useDemo } from '@/demo/demo-context';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { dashboardService } from '@/services/dashboard-service';
-import { UserRole } from '@/types/auth';
+import {
+  dashboardService,
+  StudentOverviewResponse,
+  FacultyOverviewResponse,
+  InstitutionOverviewResponse,
+  PlacementOverviewResponse,
+} from '@/services/dashboard-service';
 
 export const DashboardPage: React.FC = () => {
-  const { role } = useAuth();
-  const [activeRoleView, setActiveRoleView] = useState<UserRole>(role || 'STUDENT');
+  const { role: authRole } = useAuth();
+  const { isDemoMode, activeRole } = useDemo();
 
-  // Allow Super Admins or Admins to preview other role perspectives
-  const canSwitchPerspective = role === 'SUPER_ADMIN' || role === 'INSTITUTION_ADMIN';
+  // Effective role: Demo role takes precedence in demo mode
+  const effectiveRole = isDemoMode ? activeRole : (authRole || 'STUDENT');
 
   return (
     <div className="space-y-6">
-      {/* Role View Switcher (for Admins / Demonstrations) */}
-      {canSwitchPerspective && (
-        <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-900 text-white p-3 rounded-lg border border-slate-800 shadow-sm text-xs">
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="h-4 w-4 text-emerald-400" />
-            <span className="font-semibold text-slate-300">Perspective Switcher:</span>
-            <span className="text-slate-400">Authenticated as {role}</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            {(['STUDENT', 'FACULTY', 'INSTITUTION_ADMIN', 'PLACEMENT_OFFICER', 'SUPER_ADMIN'] as UserRole[]).map((r) => (
-              <button
-                key={r}
-                onClick={() => setActiveRoleView(r)}
-                className={`px-2.5 py-1 rounded text-xs font-medium transition-colors ${
-                  activeRoleView === r
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-                }`}
-              >
-                {r.replace('_', ' ')}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* Render Role View based on selected perspective */}
-      {activeRoleView === 'STUDENT' && <StudentDashboardView />}
-      {activeRoleView === 'FACULTY' && <FacultyDashboardView />}
-      {activeRoleView === 'INSTITUTION_ADMIN' && <InstitutionDashboardView />}
-      {activeRoleView === 'PLACEMENT_OFFICER' && <PlacementDashboardView />}
-      {activeRoleView === 'SUPER_ADMIN' && <SuperAdminDashboardView />}
+      {effectiveRole === 'STUDENT' && <StudentDashboardView />}
+      {effectiveRole === 'FACULTY' && <FacultyDashboardView />}
+      {effectiveRole === 'INSTITUTION_ADMIN' && <InstitutionDashboardView />}
+      {effectiveRole === 'PLACEMENT_OFFICER' && <PlacementDashboardView />}
+      {effectiveRole === 'SUPER_ADMIN' && <SuperAdminDashboardView />}
     </div>
   );
 };
@@ -71,58 +49,204 @@ export const DashboardPage: React.FC = () => {
 // =========================================================================
 
 const StudentDashboardView: React.FC = () => {
-  const { data, isLoading, error } = useQuery({
+  const {
+    isDemoMode,
+    activeScenario,
+    currentStudent,
+    currentMastery,
+    currentRisk,
+    currentInterventions,
+    currentCareer,
+    institution,
+  } = useDemo();
+
+  const { data: liveData, isLoading } = useQuery({
     queryKey: ['student-dashboard-overview'],
     queryFn: () => dashboardService.getStudentOverview(),
     staleTime: 30000,
+    enabled: !isDemoMode,
+    retry: 1,
   });
 
-  if (isLoading) {
+  // Construct synthetic fallback response for demo mode
+  const demoData: StudentOverviewResponse = {
+    student_profile: {
+      id: currentStudent.id,
+      full_name: `${currentStudent.first_name} ${currentStudent.last_name}`,
+      enrollment_number: currentStudent.enrollment_number,
+      program_name: 'B.Tech Computer Science & Engineering',
+      department: currentStudent.department,
+      current_semester: currentStudent.current_semester,
+      institution_name: institution.name,
+      academic_status: currentStudent.academic_status,
+    },
+    academic_performance: {
+      average_marks:
+        activeScenario === 'A'
+          ? 92.4
+          : activeScenario === 'B'
+          ? 76.5
+          : activeScenario === 'C'
+          ? 48.0
+          : null,
+      attendance_rate: currentStudent.attendance_rate,
+      total_records: 14,
+      verified_records_count: activeScenario === 'D' ? 6 : 14,
+      pending_records_count: 0,
+      enrolled_subjects_count: 6,
+      freshness: {
+        source_module: 'Module 01: Academic Data Hub',
+        freshness_status: 'FRESH',
+        is_snapshot: false,
+      },
+    },
+    mastery_summary: {
+      topics_assessed_count: 6,
+      topics_demonstrated_count: currentMastery.filter(
+        (m) => m.mastery_state === 'MASTERED'
+      ).length,
+      topics_developing_count: currentMastery.filter(
+        (m) => m.mastery_state === 'PROGRESSING'
+      ).length,
+      topics_insufficient_evidence_count: currentMastery.filter(
+        (m) => m.mastery_state === 'INSUFFICIENT_EVIDENCE'
+      ).length,
+      clo_attainment_pct:
+        activeScenario === 'A'
+          ? 84.0
+          : activeScenario === 'B'
+          ? 71.5
+          : activeScenario === 'C'
+          ? 44.0
+          : null,
+      active_learning_gaps_count: currentMastery.filter(
+        (m) => m.mastery_state === 'NEEDS_ATTENTION'
+      ).length,
+      freshness: {
+        source_module: 'Module 04: Mastery Analytics',
+        freshness_status: 'FRESH',
+        is_snapshot: false,
+      },
+    },
+    risk_summary: {
+      has_prediction: currentRisk.risk_classification !== 'INSUFFICIENT_EVIDENCE',
+      risk_classification: currentRisk.risk_classification,
+      risk_probability:
+        currentRisk.risk_probability !== null
+          ? Math.round(currentRisk.risk_probability * 100)
+          : null,
+      prediction_horizon: currentRisk.prediction_cutoff,
+      primary_adverse_factors: currentRisk.adverse_factors.map(
+        (f) => f.factor_name
+      ),
+      protective_factors: currentRisk.protective_factors.map(
+        (f) => f.factor_name
+      ),
+      prediction_timestamp: new Date().toISOString(),
+      model_version: 'v1.4-baseline',
+      disclaimer: 'Observational early support indicator. Not an institutional label.',
+      freshness: {
+        source_module: 'Module 05: Academic Risk Engine',
+        freshness_status: 'FRESH',
+        is_snapshot: false,
+      },
+    },
+    intervention_summary: {
+      active_plans_count: currentInterventions.filter(
+        (p) => p.lifecycle_status === 'ACTIVE' || p.lifecycle_status === 'APPROVED'
+      ).length,
+      pending_actions_count: currentInterventions.reduce(
+        (acc, p) => acc + p.action_items.filter((a) => !a.completed).length,
+        0
+      ),
+      completed_actions_count: currentInterventions.reduce(
+        (acc, p) => acc + p.action_items.filter((a) => a.completed).length,
+        0
+      ),
+      latest_plan_title: currentInterventions[0]?.title || 'No active support plan',
+      faculty_mentor_name: currentInterventions[0]?.faculty_advisor || 'Dr. Sarah Vance',
+      freshness: {
+        source_module: 'Module 06: Personalized Intervention',
+        freshness_status: 'FRESH',
+        is_snapshot: false,
+      },
+    },
+    career_summary: {
+      analyzed_roles_count: 4,
+      target_role_title: currentCareer.role_title,
+      core_coverage_pct: currentCareer.core_competency_coverage,
+      practical_coverage_pct: currentCareer.practical_project_coverage,
+      alignment_status: currentCareer.alignment_status,
+      verified_projects_count: currentCareer.verified_projects.filter(
+        (p) => p.verified_by_faculty
+      ).length,
+      pending_projects_count: currentCareer.verified_projects.filter(
+        (p) => !p.verified_by_faculty
+      ).length,
+      active_skill_gaps_count: currentCareer.skill_gaps.length,
+      freshness: {
+        source_module: 'Module 07: Career Readiness',
+        freshness_status: 'FRESH',
+        is_snapshot: false,
+      },
+    },
+    system_freshness: new Date().toISOString(),
+  };
+
+  const data = isDemoMode || !liveData ? demoData : liveData;
+
+  if (isLoading && !isDemoMode) {
     return (
       <div className="p-12 text-center space-y-3">
-        <RefreshCw className="h-8 w-8 animate-spin mx-auto text-blue-600" />
-        <p className="text-sm text-slate-600 font-medium">Aggregating cross-module intelligence...</p>
-      </div>
-    );
-  }
-
-  if (error || !data) {
-    return (
-      <div className="p-8 bg-red-50 border border-red-200 rounded-lg text-center space-y-3">
-        <AlertCircle className="h-8 w-8 text-red-600 mx-auto" />
-        <h3 className="text-sm font-semibold text-red-900">Student Profile Not Found</h3>
-        <p className="text-xs text-red-700 max-w-md mx-auto">
-          No student academic profile is linked to this account, or the academic database records are uninitialized.
+        <RefreshCw className="h-8 w-8 animate-spin mx-auto text-[#237277]" />
+        <p className="text-sm text-[#40524E] font-medium">
+          Aggregating cross-module intelligence...
         </p>
       </div>
     );
   }
 
-  const { student_profile, academic_performance, mastery_summary, risk_summary, intervention_summary, career_summary } = data;
+  const {
+    student_profile,
+    academic_performance,
+    mastery_summary,
+    risk_summary,
+    intervention_summary,
+    career_summary,
+  } = data;
 
   return (
     <div className="space-y-6">
       {/* Student Profile Header */}
-      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-xl p-6 shadow-md border border-slate-800">
+      <div className="bg-[#123E40] text-white rounded-[6px] p-6 shadow-subtle border border-[#18575A]">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1.5">
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-indigo-300 border-indigo-700 font-mono text-xs">
+              <span className="px-2 py-0.5 rounded-[3px] bg-[#EEF8F7] text-[#123E40] font-mono text-xs font-bold">
                 {student_profile.enrollment_number}
-              </Badge>
-              <Badge className="bg-emerald-600/30 text-emerald-300 border-emerald-600/50 text-xs">
+              </span>
+              <span className="px-2 py-0.5 rounded-[3px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-medium">
                 {student_profile.academic_status}
-              </Badge>
+              </span>
+              {isDemoMode && (
+                <span className="px-2 py-0.5 rounded-[3px] bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[11px] font-mono">
+                  Scenario {activeScenario} Active
+                </span>
+              )}
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-white">{student_profile.full_name}</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-white font-sans">
+              {student_profile.full_name}
+            </h1>
             <p className="text-xs text-slate-300">
               {student_profile.program_name} • Semester {student_profile.current_semester} • {student_profile.department}
             </p>
           </div>
           <div className="text-right">
-            <span className="text-xs text-slate-400 block font-mono">{student_profile.institution_name}</span>
+            <span className="text-xs text-[#BDCEC8] block font-mono">
+              {student_profile.institution_name}
+            </span>
             <span className="text-[11px] text-slate-400 block mt-1">
-              Freshness: {new Date(data.system_freshness).toLocaleTimeString()}
+              Evidence Freshness: Real-time Synchronized
             </span>
           </div>
         </div>
@@ -131,103 +255,119 @@ const StudentDashboardView: React.FC = () => {
       {/* 5 Core Intelligence Dimension Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {/* Dimension 1: Academic Performance */}
-        <Card className="hover:border-slate-300 transition-shadow shadow-sm">
-          <CardHeader className="pb-3 border-b border-slate-100 flex flex-row items-center justify-between">
+        <Card>
+          <CardHeader className="pb-3 border-b border-[#DCE6E2] flex flex-row items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="p-2 bg-blue-50 text-blue-600 rounded-md">
+              <div className="p-2 bg-[#EEF8F7] text-[#237277] rounded-[4px]">
                 <BookOpen className="h-4 w-4" />
               </div>
               <CardTitle className="text-sm font-semibold">Academic Records</CardTitle>
             </div>
-            <Badge variant="outline" className="text-[10px] text-slate-500 font-mono">
-              Module 03
-            </Badge>
+            <span className="text-[10px] text-[#687A75] font-mono bg-[#F7FAF9] px-1.5 py-0.5 rounded border border-[#DCE6E2]">
+              Module 01
+            </span>
           </CardHeader>
           <CardContent className="pt-4 space-y-4">
             <div className="grid grid-cols-2 gap-3 text-center">
-              <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-100">
-                <span className="text-xs text-slate-500 block">Verified Average</span>
-                <span className="text-xl font-bold text-slate-900">
-                  {academic_performance.average_marks !== null ? `${academic_performance.average_marks}%` : 'N/A'}
+              <div className="bg-[#F7FAF9] p-2.5 rounded-[4px] border border-[#DCE6E2]">
+                <span className="text-xs text-[#687A75] block">Continuous Avg</span>
+                <span className="text-xl font-bold text-[#172825] tabular-nums">
+                  {academic_performance.average_marks !== null
+                    ? `${academic_performance.average_marks}%`
+                    : 'N/A (Excused)'}
                 </span>
               </div>
-              <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-100">
-                <span className="text-xs text-slate-500 block">Attendance</span>
-                <span className="text-xl font-bold text-slate-900">
-                  {academic_performance.attendance_rate !== null ? `${academic_performance.attendance_rate}%` : 'N/A'}
+              <div className="bg-[#F7FAF9] p-2.5 rounded-[4px] border border-[#DCE6E2]">
+                <span className="text-xs text-[#687A75] block">Attendance</span>
+                <span className="text-xl font-bold text-[#172825] tabular-nums">
+                  {academic_performance.attendance_rate !== null
+                    ? `${academic_performance.attendance_rate}%`
+                    : 'N/A'}
                 </span>
               </div>
             </div>
-            <div className="text-xs text-slate-600 space-y-1">
+            <div className="text-xs text-[#40524E] space-y-1">
               <div className="flex justify-between">
                 <span>Verified Records:</span>
-                <span className="font-semibold">{academic_performance.verified_records_count} / {academic_performance.total_records}</span>
+                <span className="font-semibold text-[#172825]">
+                  {academic_performance.verified_records_count} / {academic_performance.total_records}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span>Enrolled Subjects:</span>
-                <span className="font-semibold">{academic_performance.enrolled_subjects_count}</span>
+                <span className="font-semibold text-[#172825]">
+                  {academic_performance.enrolled_subjects_count} Courses
+                </span>
               </div>
             </div>
-            <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+            <div className="pt-2 border-t border-[#DCE6E2] flex items-center justify-between text-[11px] text-[#687A75]">
               <span className="truncate">{academic_performance.freshness.source_module}</span>
-              <Link to="/academic-data" className="text-blue-600 hover:underline flex items-center gap-1 font-medium">
-                Details <ArrowRight className="h-3 w-3" />
+              <Link to="/app/academic-data" className="text-[#237277] hover:underline flex items-center gap-1 font-medium">
+                Ledger <ArrowRight className="h-3 w-3" />
               </Link>
             </div>
           </CardContent>
         </Card>
 
         {/* Dimension 2: Learning Mastery */}
-        <Card className="hover:border-slate-300 transition-shadow shadow-sm">
-          <CardHeader className="pb-3 border-b border-slate-100 flex flex-row items-center justify-between">
+        <Card>
+          <CardHeader className="pb-3 border-b border-[#DCE6E2] flex flex-row items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="p-2 bg-emerald-50 text-emerald-600 rounded-md">
+              <div className="p-2 bg-[#EEF8F7] text-[#237277] rounded-[4px]">
                 <Award className="h-4 w-4" />
               </div>
-              <CardTitle className="text-sm font-semibold">Learning Mastery</CardTitle>
+              <CardTitle className="text-sm font-semibold">Topic Mastery</CardTitle>
             </div>
-            <Badge variant="outline" className="text-[10px] text-slate-500 font-mono">
-              Module 05
-            </Badge>
+            <span className="text-[10px] text-[#687A75] font-mono bg-[#F7FAF9] px-1.5 py-0.5 rounded border border-[#DCE6E2]">
+              Module 04
+            </span>
           </CardHeader>
           <CardContent className="pt-4 space-y-4">
             <div className="space-y-1.5">
-              <div className="flex justify-between text-xs text-slate-600">
-                <span>Demonstrated Topics</span>
-                <span className="font-semibold text-emerald-700">
-                  {mastery_summary.topics_demonstrated_count} / {mastery_summary.topics_assessed_count}
+              <div className="flex justify-between text-xs text-[#40524E]">
+                <span>Demonstrated Understanding:</span>
+                <span className="font-bold text-[#172825]">
+                  {mastery_summary.topics_demonstrated_count} / {mastery_summary.topics_assessed_count} Topics
                 </span>
               </div>
-              <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden flex">
+              <div className="w-full bg-[#EFF5F3] rounded-[2px] h-2 overflow-hidden flex">
                 <div
-                  className="bg-emerald-500 h-2"
+                  className="bg-[#169C73] h-2"
                   style={{
-                    width: `${mastery_summary.topics_assessed_count ? (mastery_summary.topics_demonstrated_count / mastery_summary.topics_assessed_count) * 100 : 0}%`,
+                    width: `${
+                      mastery_summary.topics_assessed_count
+                        ? (mastery_summary.topics_demonstrated_count / mastery_summary.topics_assessed_count) * 100
+                        : 0
+                    }%`,
                   }}
                 />
                 <div
-                  className="bg-amber-400 h-2"
+                  className="bg-[#D89B22] h-2"
                   style={{
-                    width: `${mastery_summary.topics_assessed_count ? (mastery_summary.topics_developing_count / mastery_summary.topics_assessed_count) * 100 : 0}%`,
+                    width: `${
+                      mastery_summary.topics_assessed_count
+                        ? (mastery_summary.topics_developing_count / mastery_summary.topics_assessed_count) * 100
+                        : 0
+                    }%`,
                   }}
                 />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-2 text-xs text-slate-600">
-              <div className="bg-slate-50 p-2 rounded border border-slate-100">
-                <span className="text-[11px] text-slate-500 block">CLO Attainment</span>
-                <span className="font-semibold text-slate-900">
-                  {mastery_summary.clo_attainment_pct !== null ? `${mastery_summary.clo_attainment_pct}%` : 'Pending'}
+            <div className="grid grid-cols-2 gap-2 text-xs text-[#40524E]">
+              <div className="bg-[#F7FAF9] p-2 rounded-[4px] border border-[#DCE6E2]">
+                <span className="text-[11px] text-[#687A75] block">CLO Attainment</span>
+                <span className="font-semibold text-[#172825] tabular-nums">
+                  {mastery_summary.clo_attainment_pct !== null ? `${mastery_summary.clo_attainment_pct}%` : 'Pending Evidence'}
                 </span>
               </div>
-              <div className="bg-slate-50 p-2 rounded border border-slate-100">
-                <span className="text-[11px] text-slate-500 block">Open Gaps</span>
-                <span className="font-semibold text-amber-700">{mastery_summary.active_learning_gaps_count} flagged</span>
+              <div className="bg-[#F7FAF9] p-2 rounded-[4px] border border-[#DCE6E2]">
+                <span className="text-[11px] text-[#687A75] block">Open Deficits</span>
+                <span className="font-semibold text-rose-700">{mastery_summary.active_learning_gaps_count} Flagged</span>
               </div>
             </div>
-            <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
-              <span>Calibration: Deterministic</span>
-              <Link to="/mastery" className="text-emerald-600 hover:underline flex items-center gap-1 font-medium">
+            <div className="pt-2 border-t border-[#DCE6E2] flex items-center justify-between text-[11px] text-[#687A75]">
+              <span>Topic-Level Evidence</span>
+              <Link to="/app/mastery" className="text-[#237277] hover:underline flex items-center gap-1 font-medium">
                 Mastery Radar <ArrowRight className="h-3 w-3" />
               </Link>
             </div>
@@ -235,175 +375,172 @@ const StudentDashboardView: React.FC = () => {
         </Card>
 
         {/* Dimension 3: Explainable Academic Risk */}
-        <Card className="hover:border-slate-300 transition-shadow shadow-sm">
-          <CardHeader className="pb-3 border-b border-slate-100 flex flex-row items-center justify-between">
+        <Card>
+          <CardHeader className="pb-3 border-b border-[#DCE6E2] flex flex-row items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="p-2 bg-amber-50 text-amber-600 rounded-md">
+              <div className="p-2 bg-amber-50 text-amber-700 rounded-[4px]">
                 <AlertTriangle className="h-4 w-4" />
               </div>
               <CardTitle className="text-sm font-semibold">Academic Risk Horizon</CardTitle>
             </div>
-            <Badge variant="outline" className="text-[10px] text-slate-500 font-mono">
-              Module 06
-            </Badge>
+            <span className="text-[10px] text-[#687A75] font-mono bg-[#F7FAF9] px-1.5 py-0.5 rounded border border-[#DCE6E2]">
+              Module 05
+            </span>
           </CardHeader>
           <CardContent className="pt-4 space-y-3">
             {risk_summary.has_prediction ? (
               <>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-slate-600">Risk Screening:</span>
+                  <span className="text-xs text-[#40524E]">Risk Classification:</span>
                   <Badge
-                    className={
+                    variant={
                       risk_summary.risk_classification === 'LOW'
-                        ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                        ? 'success'
                         : risk_summary.risk_classification === 'MODERATE'
-                        ? 'bg-amber-100 text-amber-800 border-amber-300'
-                        : 'bg-red-100 text-red-800 border-red-300'
+                        ? 'warning'
+                        : 'error'
                     }
                   >
-                    {risk_summary.risk_classification} RISK
+                    {risk_summary.risk_classification} RISK ({risk_summary.risk_probability}%)
                   </Badge>
                 </div>
                 {risk_summary.primary_adverse_factors.length > 0 && (
                   <div className="space-y-1">
-                    <span className="text-[11px] font-semibold text-slate-500 block uppercase">Primary Factor:</span>
-                    <p className="text-xs text-slate-700 bg-amber-50/60 p-2 rounded border border-amber-100">
+                    <span className="text-[11px] font-semibold text-[#687A75] block uppercase">
+                      Primary Adverse Factor:
+                    </span>
+                    <p className="text-xs text-amber-900 bg-amber-50 p-2 rounded-[4px] border border-amber-200">
                       {risk_summary.primary_adverse_factors[0]}
                     </p>
                   </div>
                 )}
-                <p className="text-[10px] text-slate-400 italic leading-snug">
+                <p className="text-[10px] text-[#687A75] italic leading-snug">
                   {risk_summary.disclaimer}
                 </p>
               </>
             ) : (
-              <div className="p-4 bg-slate-50 text-center rounded border border-slate-100 text-xs text-slate-500">
-                No active risk screening on record.
+              <div className="p-4 bg-[#F7FAF9] text-center rounded-[4px] border border-[#DCE6E2] text-xs text-[#687A75]">
+                {activeScenario === 'D'
+                  ? 'INSUFFICIENT EVIDENCE (Excused Absence Gate Active)'
+                  : 'No active risk warning.'}
               </div>
             )}
-            <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+            <div className="pt-2 border-t border-[#DCE6E2] flex items-center justify-between text-[11px] text-[#687A75]">
               <span>Time-Bounded Cutoff</span>
-              <Link to="/academic-risk" className="text-amber-600 hover:underline flex items-center gap-1 font-medium">
-                Risk Profile <ArrowRight className="h-3 w-3" />
+              <Link to="/app/risk" className="text-[#237277] hover:underline flex items-center gap-1 font-medium">
+                Risk Engine <ArrowRight className="h-3 w-3" />
               </Link>
             </div>
           </CardContent>
         </Card>
 
         {/* Dimension 4: Personalized Academic Interventions */}
-        <Card className="hover:border-slate-300 transition-shadow shadow-sm">
-          <CardHeader className="pb-3 border-b border-slate-100 flex flex-row items-center justify-between">
+        <Card>
+          <CardHeader className="pb-3 border-b border-[#DCE6E2] flex flex-row items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="p-2 bg-indigo-50 text-indigo-600 rounded-md">
+              <div className="p-2 bg-[#EEF8F7] text-[#237277] rounded-[4px]">
                 <CheckCircle2 className="h-4 w-4" />
               </div>
-              <CardTitle className="text-sm font-semibold">Active Interventions</CardTitle>
+              <CardTitle className="text-sm font-semibold">Supervised Interventions</CardTitle>
             </div>
-            <Badge variant="outline" className="text-[10px] text-slate-500 font-mono">
-              Module 07
-            </Badge>
+            <span className="text-[10px] text-[#687A75] font-mono bg-[#F7FAF9] px-1.5 py-0.5 rounded border border-[#DCE6E2]">
+              Module 06
+            </span>
           </CardHeader>
           <CardContent className="pt-4 space-y-3">
-            <div className="flex justify-between items-center text-xs">
-              <span className="text-slate-600">Active Support Plans:</span>
-              <span className="font-bold text-slate-900">{intervention_summary.active_plans_count}</span>
+            <div className="bg-[#F7FAF9] p-3 rounded-[4px] border border-[#DCE6E2] space-y-1">
+              <span className="text-[11px] text-[#687A75] block font-medium">Active Support Plan:</span>
+              <span className="text-xs font-bold text-[#172825] line-clamp-1">
+                {intervention_summary.latest_plan_title}
+              </span>
+              <span className="text-[11px] text-[#237277] block">
+                Supervisor: {intervention_summary.faculty_mentor_name}
+              </span>
             </div>
-            {intervention_summary.latest_plan_title ? (
-              <div className="bg-indigo-50/50 p-2.5 rounded border border-indigo-100 text-xs space-y-1">
-                <span className="font-semibold text-indigo-950 block truncate">
-                  {intervention_summary.latest_plan_title}
-                </span>
-                <span className="text-[11px] text-indigo-700 block">
-                  Mentor: {intervention_summary.faculty_mentor_name || 'Faculty Mentor'}
-                </span>
-              </div>
-            ) : (
-              <p className="text-xs text-slate-500">No active academic remediation required.</p>
-            )}
             <div className="grid grid-cols-2 gap-2 text-center text-xs">
-              <div className="p-2 bg-slate-50 rounded border border-slate-100">
-                <span className="text-[11px] text-slate-500 block">Pending</span>
-                <span className="font-semibold text-amber-700">{intervention_summary.pending_actions_count} items</span>
+              <div className="p-2 bg-[#F7FAF9] rounded-[4px] border border-[#DCE6E2]">
+                <span className="text-[11px] text-[#687A75] block">Completed Actions</span>
+                <span className="font-bold text-[#169C73]">{intervention_summary.completed_actions_count}</span>
               </div>
-              <div className="p-2 bg-slate-50 rounded border border-slate-100">
-                <span className="text-[11px] text-slate-500 block">Completed</span>
-                <span className="font-semibold text-emerald-700">{intervention_summary.completed_actions_count} items</span>
+              <div className="p-2 bg-[#F7FAF9] rounded-[4px] border border-[#DCE6E2]">
+                <span className="text-[11px] text-[#687A75] block">Pending Milestones</span>
+                <span className="font-bold text-amber-700">{intervention_summary.pending_actions_count}</span>
               </div>
             </div>
-            <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+            <div className="pt-2 border-t border-[#DCE6E2] flex items-center justify-between text-[11px] text-[#687A75]">
               <span>Faculty Supervised</span>
-              <Link to="/interventions" className="text-indigo-600 hover:underline flex items-center gap-1 font-medium">
-                My Support Plan <ArrowRight className="h-3 w-3" />
+              <Link to="/app/interventions" className="text-[#237277] hover:underline flex items-center gap-1 font-medium">
+                Action Plan <ArrowRight className="h-3 w-3" />
               </Link>
             </div>
           </CardContent>
         </Card>
 
-        {/* Dimension 5: Career Readiness & Industry Mapping */}
-        <Card className="hover:border-slate-300 transition-shadow shadow-sm md:col-span-2 lg:col-span-2">
-          <CardHeader className="pb-3 border-b border-slate-100 flex flex-row items-center justify-between">
+        {/* Dimension 5: Career Readiness */}
+        <Card className="md:col-span-2">
+          <CardHeader className="pb-3 border-b border-[#DCE6E2] flex flex-row items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="p-2 bg-purple-50 text-purple-600 rounded-md">
+              <div className="p-2 bg-[#EEF8F7] text-[#237277] rounded-[4px]">
                 <Briefcase className="h-4 w-4" />
               </div>
-              <CardTitle className="text-sm font-semibold">Career Readiness & Practical Projects</CardTitle>
+              <CardTitle className="text-sm font-semibold">Career Readiness & Practical Alignment</CardTitle>
             </div>
-            <Badge variant="outline" className="text-[10px] text-slate-500 font-mono">
-              Module 08
-            </Badge>
+            <span className="text-[10px] text-[#687A75] font-mono bg-[#F7FAF9] px-1.5 py-0.5 rounded border border-[#DCE6E2]">
+              Module 07
+            </span>
           </CardHeader>
           <CardContent className="pt-4 space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-purple-50/50 p-3 rounded-lg border border-purple-100">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#EEF8F7] p-3 rounded-[4px] border border-[#BDCEC8]">
               <div>
-                <span className="text-xs text-purple-700 block font-medium">Target Role Profile:</span>
-                <span className="text-base font-bold text-purple-950">
-                  {career_summary.target_role_title || 'Software Development Engineer'}
+                <span className="text-xs text-[#123E40] block font-medium">Target Industry Role:</span>
+                <span className="text-base font-bold text-[#172825]">
+                  {career_summary.target_role_title}
                 </span>
               </div>
-              <Badge className="bg-purple-600 text-white self-start sm:self-auto text-xs">
-                {career_summary.alignment_status?.replace('_', ' ') || 'EVALUATED'}
+              <Badge variant="brand" className="self-start sm:self-auto text-xs">
+                {career_summary.alignment_status?.replace('_', ' ')}
               </Badge>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1">
-                <div className="flex justify-between text-xs text-slate-600">
-                  <span>Core Competency Coverage:</span>
-                  <span className="font-bold text-slate-900">{career_summary.core_coverage_pct ?? 0}%</span>
+                <div className="flex justify-between text-xs text-[#40524E]">
+                  <span>Core Academic Competency Coverage:</span>
+                  <span className="font-bold text-[#172825]">{career_summary.core_coverage_pct ?? 0}%</span>
                 </div>
-                <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                  <div className="bg-blue-600 h-2" style={{ width: `${career_summary.core_coverage_pct ?? 0}%` }} />
+                <div className="w-full bg-[#EFF5F3] rounded-[2px] h-2 overflow-hidden">
+                  <div className="bg-[#237277] h-2" style={{ width: `${career_summary.core_coverage_pct ?? 0}%` }} />
                 </div>
               </div>
               <div className="space-y-1">
-                <div className="flex justify-between text-xs text-slate-600">
-                  <span>Practical Project Coverage:</span>
-                  <span className="font-bold text-slate-900">{career_summary.practical_coverage_pct ?? 0}%</span>
+                <div className="flex justify-between text-xs text-[#40524E]">
+                  <span>Practical Project Portfolio Evidence:</span>
+                  <span className="font-bold text-[#172825]">{career_summary.practical_coverage_pct ?? 0}%</span>
                 </div>
-                <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                  <div className="bg-emerald-600 h-2" style={{ width: `${career_summary.practical_coverage_pct ?? 0}%` }} />
+                <div className="w-full bg-[#EFF5F3] rounded-[2px] h-2 overflow-hidden">
+                  <div className="bg-[#169C73] h-2" style={{ width: `${career_summary.practical_coverage_pct ?? 0}%` }} />
                 </div>
               </div>
             </div>
 
             <div className="grid grid-cols-3 gap-2 text-center text-xs">
-              <div className="p-2 bg-slate-50 rounded border border-slate-100">
-                <span className="text-[11px] text-slate-500 block">Verified Projects</span>
+              <div className="p-2 bg-[#F7FAF9] rounded-[4px] border border-[#DCE6E2]">
+                <span className="text-[11px] text-[#687A75] block">Verified Projects</span>
                 <span className="font-semibold text-emerald-700">{career_summary.verified_projects_count}</span>
               </div>
-              <div className="p-2 bg-slate-50 rounded border border-slate-100">
-                <span className="text-[11px] text-slate-500 block">Pending Review</span>
+              <div className="p-2 bg-[#F7FAF9] rounded-[4px] border border-[#DCE6E2]">
+                <span className="text-[11px] text-[#687A75] block">Pending Review</span>
                 <span className="font-semibold text-amber-700">{career_summary.pending_projects_count}</span>
               </div>
-              <div className="p-2 bg-slate-50 rounded border border-slate-100">
-                <span className="text-[11px] text-slate-500 block">Identified Gaps</span>
-                <span className="font-semibold text-slate-900">{career_summary.active_skill_gaps_count}</span>
+              <div className="p-2 bg-[#F7FAF9] rounded-[4px] border border-[#DCE6E2]">
+                <span className="text-[11px] text-[#687A75] block">Skill Deficits</span>
+                <span className="font-semibold text-[#172825]">{career_summary.active_skill_gaps_count} Gaps</span>
               </div>
             </div>
 
-            <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
-              <span>Non-Aggregated Multi-Modal Evidence</span>
-              <Link to="/career-readiness" className="text-purple-600 hover:underline flex items-center gap-1 font-medium">
+            <div className="pt-2 border-t border-[#DCE6E2] flex items-center justify-between text-[11px] text-[#687A75]">
+              <span>Verified Portfolio Evidence</span>
+              <Link to="/app/career-readiness" className="text-[#237277] hover:underline flex items-center gap-1 font-medium">
                 Role Skill Radar <ArrowRight className="h-3 w-3" />
               </Link>
             </div>
@@ -419,140 +556,175 @@ const StudentDashboardView: React.FC = () => {
 // =========================================================================
 
 const FacultyDashboardView: React.FC = () => {
-  const { data, isLoading, error } = useQuery({
+  const { isDemoMode, subjects, faculty, dashboardData, institution } = useDemo();
+
+  const { data: liveData, isLoading } = useQuery({
     queryKey: ['faculty-dashboard-overview'],
     queryFn: () => dashboardService.getFacultyOverview(),
     staleTime: 30000,
+    enabled: !isDemoMode,
   });
 
-  if (isLoading) {
+  const demoData: FacultyOverviewResponse = {
+    faculty_name: faculty[0].name,
+    department: faculty[0].department,
+    institution_name: institution.name,
+    total_students_monitored: dashboardData.total_students,
+    verification_queue: {
+      pending_academic_records: 3,
+      pending_interventions_review: 2,
+      pending_practical_projects: 4,
+    },
+    cohort_risk_overview: {
+      high_risk_students_count: dashboardData.risk_distribution.high,
+      moderate_risk_students_count: dashboardData.risk_distribution.moderate,
+      low_risk_students_count: dashboardData.risk_distribution.low,
+      active_interventions_count: dashboardData.active_interventions_count,
+      learning_gaps_flagged_count: 5,
+    },
+    assigned_subjects: subjects.slice(0, 3).map((s) => ({
+      subject_id: s.id,
+      code: s.code,
+      name: s.name,
+      semester: s.semester,
+      enrolled_students_count: 24,
+      average_attendance: 84.5,
+      average_marks: 78.2,
+    })),
+    freshness: {
+      source_module: 'Module 01: Academic Data Hub',
+      freshness_status: 'FRESH',
+      is_snapshot: false,
+    },
+  };
+
+  const data = isDemoMode || !liveData ? demoData : liveData;
+  const { verification_queue, cohort_risk_overview, assigned_subjects } = data;
+
+  if (isLoading && !isDemoMode) {
     return (
       <div className="p-12 text-center space-y-3">
-        <RefreshCw className="h-8 w-8 animate-spin mx-auto text-blue-600" />
-        <p className="text-sm text-slate-600 font-medium">Loading faculty academic queue...</p>
+        <RefreshCw className="h-8 w-8 animate-spin mx-auto text-[#237277]" />
+        <p className="text-sm text-[#40524E]">Loading faculty academic queue...</p>
       </div>
     );
   }
-
-  if (error || !data) {
-    return (
-      <div className="p-8 bg-red-50 border border-red-200 rounded-lg text-center space-y-3">
-        <AlertCircle className="h-8 w-8 text-red-600 mx-auto" />
-        <h3 className="text-sm font-semibold text-red-900">Faculty Workspace Error</h3>
-        <p className="text-xs text-red-700">Could not retrieve assigned academic subjects or verification queues.</p>
-      </div>
-    );
-  }
-
-  const { verification_queue, cohort_risk_overview, assigned_subjects } = data;
 
   return (
     <div className="space-y-6">
-      <div className="bg-slate-900 text-white rounded-xl p-6 shadow-md border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <Badge className="bg-blue-600 text-white text-xs mb-2">Faculty Intelligence Hub</Badge>
-          <h1 className="text-2xl font-bold tracking-tight text-white">{data.faculty_name}</h1>
-          <p className="text-xs text-slate-300">
-            {data.department} • {data.institution_name} • {data.total_students_monitored} Students Monitored
-          </p>
+      {/* Faculty Profile Banner */}
+      <div className="bg-[#123E40] text-white rounded-[6px] p-6 shadow-subtle border border-[#18575A]">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <span className="px-2 py-0.5 rounded-[3px] bg-[#EEF8F7] text-[#123E40] text-xs font-mono font-bold">
+              FACULTY INTELLIGENCE WORKSPACE
+            </span>
+            <h1 className="text-2xl font-bold tracking-tight text-white mt-1 font-sans">{data.faculty_name}</h1>
+            <p className="text-xs text-slate-300">
+              Department of {data.department} • {data.institution_name}
+            </p>
+          </div>
+          <div className="text-right">
+            <span className="text-xs text-[#BDCEC8] block font-mono">Academic Year 2025-2026</span>
+            <span className="text-[11px] text-slate-400 block mt-1">Supervisory Privileges Active</span>
+          </div>
         </div>
       </div>
 
-      {/* Verification Queue Cards */}
-      <div>
-        <h2 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-3">Action Required: Verification Queues</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card className="border-l-4 border-l-amber-500">
-            <CardContent className="pt-4 flex items-center justify-between">
-              <div>
-                <span className="text-xs text-slate-500 block">Pending Academic Marks</span>
-                <span className="text-2xl font-bold text-slate-900">{verification_queue.pending_academic_records}</span>
-              </div>
-              <Link to="/academic-data">
-                <Button size="sm" variant="outline" className="text-xs">
-                  Review Records
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-          <Card className="border-l-4 border-l-indigo-500">
-            <CardContent className="pt-4 flex items-center justify-between">
-              <div>
-                <span className="text-xs text-slate-500 block">Interventions Awaiting Review</span>
-                <span className="text-2xl font-bold text-slate-900">{verification_queue.pending_interventions_review}</span>
-              </div>
-              <Link to="/interventions">
-                <Button size="sm" variant="outline" className="text-xs">
-                  Review Plans
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-          <Card className="border-l-4 border-l-purple-500">
-            <CardContent className="pt-4 flex items-center justify-between">
-              <div>
-                <span className="text-xs text-slate-500 block">Practical Projects to Verify</span>
-                <span className="text-2xl font-bold text-slate-900">{verification_queue.pending_practical_projects}</span>
-              </div>
-              <Link to="/career-readiness">
-                <Button size="sm" variant="outline" className="text-xs">
-                  Verify Projects
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-        </div>
+      {/* Verification Queue & Risk Highlights */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <Card className="border-l-4 border-l-[#237277]">
+          <CardContent className="p-4 flex items-center justify-between">
+            <div>
+              <span className="text-xs text-[#687A75] block font-medium">Pending Marks Verification</span>
+              <span className="text-2xl font-bold text-[#172825]">{verification_queue.pending_academic_records}</span>
+            </div>
+            <Link to="/app/academic-data">
+              <Button variant="outline" size="sm" className="text-xs border-[#BDCEC8]">
+                Verify Ledgers
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+
+        <Card className="border-l-4 border-l-amber-500">
+          <CardContent className="p-4 flex items-center justify-between">
+            <div>
+              <span className="text-xs text-[#687A75] block font-medium">Support Plans Pending Review</span>
+              <span className="text-2xl font-bold text-amber-700">{verification_queue.pending_interventions_review}</span>
+            </div>
+            <Link to="/app/interventions">
+              <Button variant="outline" size="sm" className="text-xs border-[#BDCEC8]">
+                Review Plans
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+
+        <Card className="border-l-4 border-l-purple-500">
+          <CardContent className="p-4 flex items-center justify-between">
+            <div>
+              <span className="text-xs text-[#687A75] block font-medium">Project Portfolios for Review</span>
+              <span className="text-2xl font-bold text-purple-700">{verification_queue.pending_practical_projects}</span>
+            </div>
+            <Link to="/app/career-readiness">
+              <Button variant="outline" size="sm" className="text-xs border-[#BDCEC8]">
+                Review Projects
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Cohort Risk and Learning Gap Indicators */}
+      {/* Cohort Risk Breakdown Bar */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-center">
-          <span className="text-xs text-red-700 block font-medium">High Risk Students</span>
-          <span className="text-2xl font-bold text-red-900">{cohort_risk_overview.high_risk_students_count}</span>
+        <div className="bg-rose-50 border border-rose-200 rounded-[4px] p-3 text-center">
+          <span className="text-xs text-rose-800 block font-medium">High Risk Students</span>
+          <span className="text-2xl font-bold text-rose-900">{cohort_risk_overview.high_risk_students_count}</span>
         </div>
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-center">
-          <span className="text-xs text-amber-700 block font-medium">Moderate Risk</span>
+        <div className="bg-amber-50 border border-amber-200 rounded-[4px] p-3 text-center">
+          <span className="text-xs text-amber-800 block font-medium">Moderate Risk</span>
           <span className="text-2xl font-bold text-amber-900">{cohort_risk_overview.moderate_risk_students_count}</span>
         </div>
-        <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-3 text-center">
-          <span className="text-xs text-indigo-700 block font-medium">Active Support Plans</span>
-          <span className="text-2xl font-bold text-indigo-900">{cohort_risk_overview.active_interventions_count}</span>
+        <div className="bg-[#EEF8F7] border border-[#BDCEC8] rounded-[4px] p-3 text-center">
+          <span className="text-xs text-[#123E40] block font-medium">Active Support Plans</span>
+          <span className="text-2xl font-bold text-[#123E40]">{cohort_risk_overview.active_interventions_count}</span>
         </div>
-        <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 text-center">
-          <span className="text-xs text-slate-600 block font-medium">Flagged Topic Gaps</span>
-          <span className="text-2xl font-bold text-slate-900">{cohort_risk_overview.learning_gaps_flagged_count}</span>
+        <div className="bg-[#F7FAF9] border border-[#DCE6E2] rounded-[4px] p-3 text-center">
+          <span className="text-xs text-[#687A75] block font-medium">Flagged Topic Gaps</span>
+          <span className="text-2xl font-bold text-[#172825]">{cohort_risk_overview.learning_gaps_flagged_count}</span>
         </div>
       </div>
 
       {/* Assigned Subjects Table */}
       <Card>
-        <CardHeader className="pb-3 border-b border-slate-100">
+        <CardHeader className="pb-3 border-b border-[#DCE6E2]">
           <CardTitle className="text-sm font-semibold">Assigned Subjects & Performance Health</CardTitle>
         </CardHeader>
-        <CardContent className="pt-0">
+        <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full text-xs text-left">
-              <thead className="bg-slate-50 text-slate-600 border-b border-slate-200">
+              <thead className="bg-[#EEF8F7] text-[#123E40] border-b border-[#DCE6E2] font-semibold">
                 <tr>
-                  <th className="py-2.5 px-3">Subject Code</th>
-                  <th className="py-2.5 px-3">Subject Name</th>
-                  <th className="py-2.5 px-3">Semester</th>
-                  <th className="py-2.5 px-3">Enrolled Students</th>
-                  <th className="py-2.5 px-3">Avg Attendance</th>
-                  <th className="py-2.5 px-3">Avg Marks</th>
+                  <th className="py-2.5 px-4 font-mono">Code</th>
+                  <th className="py-2.5 px-4">Subject Name</th>
+                  <th className="py-2.5 px-4">Semester</th>
+                  <th className="py-2.5 px-4">Students</th>
+                  <th className="py-2.5 px-4">Avg Attendance</th>
+                  <th className="py-2.5 px-4">Continuous Avg</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-[#DCE6E2]">
                 {assigned_subjects.map((s) => (
-                  <tr key={s.subject_id} className="hover:bg-slate-50/50">
-                    <td className="py-2.5 px-3 font-mono font-medium">{s.code}</td>
-                    <td className="py-2.5 px-3 font-semibold text-slate-900">{s.name}</td>
-                    <td className="py-2.5 px-3">{s.semester}</td>
-                    <td className="py-2.5 px-3">{s.enrolled_students_count}</td>
-                    <td className="py-2.5 px-3 font-medium">
+                  <tr key={s.subject_id} className="hover:bg-[#F7FAF9]">
+                    <td className="py-2.5 px-4 font-mono font-medium text-[#237277]">{s.code}</td>
+                    <td className="py-2.5 px-4 font-semibold text-[#172825]">{s.name}</td>
+                    <td className="py-2.5 px-4 text-[#40524E]">Sem {s.semester}</td>
+                    <td className="py-2.5 px-4 text-[#40524E]">{s.enrolled_students_count}</td>
+                    <td className="py-2.5 px-4 font-medium text-[#172825] tabular-nums">
                       {s.average_attendance !== null ? `${s.average_attendance}%` : 'N/A'}
                     </td>
-                    <td className="py-2.5 px-3 font-medium">
+                    <td className="py-2.5 px-4 font-medium text-[#172825] tabular-nums">
                       {s.average_marks !== null ? `${s.average_marks}%` : 'N/A'}
                     </td>
                   </tr>
@@ -571,31 +743,85 @@ const FacultyDashboardView: React.FC = () => {
 // =========================================================================
 
 const InstitutionDashboardView: React.FC = () => {
-  const { data, isLoading } = useQuery({
+  const { isDemoMode, dashboardData, institution } = useDemo();
+
+  const { data: liveData } = useQuery({
     queryKey: ['institution-dashboard-overview'],
     queryFn: () => dashboardService.getInstitutionOverview(),
     staleTime: 30000,
+    enabled: !isDemoMode,
   });
 
-  if (isLoading || !data) {
-    return (
-      <div className="p-12 text-center space-y-3">
-        <RefreshCw className="h-8 w-8 animate-spin mx-auto text-blue-600" />
-        <p className="text-sm text-slate-600">Compiling institutional intelligence...</p>
-      </div>
-    );
-  }
+  const demoData: InstitutionOverviewResponse = {
+    institution_id: institution.id,
+    institution_name: institution.name,
+    institution_code: institution.code,
+    summary_counts: {
+      total_active_students: dashboardData.total_students,
+      total_faculty: 5,
+      total_programs: 2,
+      total_subjects: 6,
+    },
+    academic_data_status: {
+      total_academic_records: 120,
+      verified_records_pct: 95.8,
+      data_quality_findings_count: 2,
+    },
+    mastery_overview: {
+      mastery_demonstrated_pct: 78.4,
+      mastery_developing_pct: 16.2,
+      insufficient_evidence_pct: 5.4,
+      total_evaluated_topics: 48,
+    },
+    risk_distribution: {
+      high_risk_count: dashboardData.risk_distribution.high,
+      medium_risk_count: dashboardData.risk_distribution.moderate,
+      low_risk_count: dashboardData.risk_distribution.low,
+      unscreened_count: 2,
+    },
+    intervention_metrics: {
+      active_plans_count: dashboardData.active_interventions_count,
+      completed_plans_count: 8,
+      pending_review_count: 2,
+    },
+    career_readiness_overview: {
+      students_evaluated_count: 24,
+      ready_students_count: 14,
+      approaching_students_count: 6,
+      developing_students_count: 4,
+      verified_projects_total: 18,
+    },
+    freshness: {
+      source_module: 'Unified Aggregator',
+      freshness_status: 'FRESH',
+      is_snapshot: false,
+    },
+  };
 
-  const { summary_counts, academic_data_status, mastery_overview, risk_distribution, intervention_metrics, career_readiness_overview } = data;
+  const data = isDemoMode || !liveData ? demoData : liveData;
+  const {
+    summary_counts,
+    academic_data_status,
+    mastery_overview,
+    risk_distribution,
+    career_readiness_overview,
+  } = data;
 
   return (
     <div className="space-y-6">
-      <div className="bg-slate-900 text-white rounded-xl p-6 shadow-md border border-slate-800">
+      {/* Banner */}
+      <div className="bg-[#123E40] text-white rounded-[6px] p-6 shadow-subtle border border-[#18575A]">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <Badge className="bg-emerald-600 text-white text-xs mb-2">Institutional Intelligence</Badge>
-            <h1 className="text-2xl font-bold tracking-tight text-white">{data.institution_name}</h1>
-            <p className="text-xs text-slate-300">Code: {data.institution_code} • Multi-Tenant Tenant Isolation Active</p>
+            <span className="px-2 py-0.5 rounded-[3px] bg-[#EEF8F7] text-[#123E40] text-xs font-mono font-bold">
+              INSTITUTIONAL INTELLIGENCE
+            </span>
+            <h1 className="text-2xl font-bold tracking-tight text-white mt-1 font-sans">{data.institution_name}</h1>
+            <p className="text-xs text-slate-300">Code: {data.institution_code} • Multi-Tenant Isolation Active</p>
+          </div>
+          <div className="text-right">
+            <span className="text-xs text-[#BDCEC8] block font-mono">Academic Year 2025-2026</span>
+            <span className="text-[11px] text-slate-400 block mt-1">Tenant Status: Operational</span>
           </div>
         </div>
       </div>
@@ -603,123 +829,101 @@ const InstitutionDashboardView: React.FC = () => {
       {/* Summary Counts Bar */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <Card className="text-center p-4">
-          <span className="text-xs text-slate-500 block">Active Students</span>
-          <span className="text-2xl font-bold text-slate-900">{summary_counts.total_active_students}</span>
+          <span className="text-xs text-[#687A75] block">Active Cohort</span>
+          <span className="text-2xl font-bold text-[#172825]">{summary_counts.total_active_students} Students</span>
         </Card>
         <Card className="text-center p-4">
-          <span className="text-xs text-slate-500 block">Faculty Members</span>
-          <span className="text-2xl font-bold text-slate-900">{summary_counts.total_faculty}</span>
+          <span className="text-xs text-[#687A75] block">Faculty Members</span>
+          <span className="text-2xl font-bold text-[#172825]">{summary_counts.total_faculty}</span>
         </Card>
         <Card className="text-center p-4">
-          <span className="text-xs text-slate-500 block">Degree Programs</span>
-          <span className="text-2xl font-bold text-slate-900">{summary_counts.total_programs}</span>
+          <span className="text-xs text-[#687A75] block">Degree Programs</span>
+          <span className="text-2xl font-bold text-[#172825]">{summary_counts.total_programs}</span>
         </Card>
         <Card className="text-center p-4">
-          <span className="text-xs text-slate-500 block">Academic Subjects</span>
-          <span className="text-2xl font-bold text-slate-900">{summary_counts.total_subjects}</span>
+          <span className="text-xs text-[#687A75] block">Academic Subjects</span>
+          <span className="text-2xl font-bold text-[#172825]">{summary_counts.total_subjects}</span>
         </Card>
       </div>
 
       {/* 4 Quadrants: Academic Data, Mastery, Risk, Career */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <Card>
-          <CardHeader className="pb-3 border-b border-slate-100">
-            <CardTitle className="text-sm font-semibold">Academic Data Health (Module 03)</CardTitle>
+          <CardHeader className="pb-3 border-b border-[#DCE6E2]">
+            <CardTitle className="text-sm font-semibold">Academic Data Health (Module 01)</CardTitle>
           </CardHeader>
           <CardContent className="pt-4 space-y-2 text-xs">
             <div className="flex justify-between">
-              <span className="text-slate-600">Total Academic Records:</span>
-              <span className="font-semibold text-slate-900">{academic_data_status.total_academic_records}</span>
+              <span className="text-[#687A75]">Total Academic Records:</span>
+              <span className="font-semibold text-[#172825]">{academic_data_status.total_academic_records}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-600">Verification Rate:</span>
-              <span className="font-semibold text-emerald-700">{academic_data_status.verified_records_pct}%</span>
+              <span className="text-[#687A75]">Verification Rate:</span>
+              <span className="font-semibold text-[#169C73]">{academic_data_status.verified_records_pct}%</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-600">Open Data Quality Findings:</span>
+              <span className="text-[#687A75]">Open Data Quality Findings:</span>
               <span className="font-semibold text-amber-700">{academic_data_status.data_quality_findings_count}</span>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="pb-3 border-b border-slate-100">
-            <CardTitle className="text-sm font-semibold">Learning Mastery Distribution (Module 05)</CardTitle>
+          <CardHeader className="pb-3 border-b border-[#DCE6E2]">
+            <CardTitle className="text-sm font-semibold">Mastery Distribution (Module 04)</CardTitle>
           </CardHeader>
           <CardContent className="pt-4 space-y-2 text-xs">
             <div className="flex justify-between">
-              <span className="text-slate-600">Demonstrated Mastery:</span>
-              <span className="font-semibold text-emerald-700">{mastery_overview.mastery_demonstrated_pct}%</span>
+              <span className="text-[#687A75]">Demonstrated Mastery:</span>
+              <span className="font-semibold text-[#169C73]">{mastery_overview.mastery_demonstrated_pct}%</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-600">Developing Mastery:</span>
+              <span className="text-[#687A75]">Developing Mastery:</span>
               <span className="font-semibold text-amber-700">{mastery_overview.mastery_developing_pct}%</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-600">Insufficient Assessment Evidence:</span>
-              <span className="font-semibold text-slate-500">{mastery_overview.insufficient_evidence_pct}%</span>
+              <span className="text-[#687A75]">Insufficient Assessment Evidence:</span>
+              <span className="font-semibold text-[#687A75]">{mastery_overview.insufficient_evidence_pct}%</span>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="pb-3 border-b border-slate-100">
-            <CardTitle className="text-sm font-semibold">Academic Risk Screening (Module 06)</CardTitle>
+          <CardHeader className="pb-3 border-b border-[#DCE6E2]">
+            <CardTitle className="text-sm font-semibold">Academic Risk Screening (Module 05)</CardTitle>
           </CardHeader>
           <CardContent className="pt-4 space-y-2 text-xs">
             <div className="flex justify-between">
-              <span className="text-slate-600">High / Critical Risk Students:</span>
-              <span className="font-semibold text-red-700">{risk_distribution.high_risk_count}</span>
+              <span className="text-[#687A75]">High Risk Students:</span>
+              <span className="font-semibold text-rose-700">{risk_distribution.high_risk_count}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-600">Moderate Risk Students:</span>
+              <span className="text-[#687A75]">Moderate Risk Students:</span>
               <span className="font-semibold text-amber-700">{risk_distribution.medium_risk_count}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-600">Low Risk Students:</span>
-              <span className="font-semibold text-emerald-700">{risk_distribution.low_risk_count}</span>
+              <span className="text-[#687A75]">Low Risk Students:</span>
+              <span className="font-semibold text-[#169C73]">{risk_distribution.low_risk_count}</span>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="pb-3 border-b border-slate-100">
-            <CardTitle className="text-sm font-semibold">Career Readiness & Projects (Module 08)</CardTitle>
+          <CardHeader className="pb-3 border-b border-[#DCE6E2]">
+            <CardTitle className="text-sm font-semibold">Career Readiness & Projects (Module 07)</CardTitle>
           </CardHeader>
           <CardContent className="pt-4 space-y-2 text-xs">
             <div className="flex justify-between">
-              <span className="text-slate-600">Evaluated Students:</span>
-              <span className="font-semibold text-slate-900">{career_readiness_overview.students_evaluated_count}</span>
+              <span className="text-[#687A75]">Evaluated Students:</span>
+              <span className="font-semibold text-[#172825]">{career_readiness_overview.students_evaluated_count}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-600">Industry Ready Students:</span>
-              <span className="font-semibold text-emerald-700">{career_readiness_overview.ready_students_count}</span>
+              <span className="text-[#687A75]">Industry Aligned Students:</span>
+              <span className="font-semibold text-[#169C73]">{career_readiness_overview.ready_students_count}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-600">Verified Practical Projects:</span>
+              <span className="text-[#687A75]">Verified Practical Projects:</span>
               <span className="font-semibold text-purple-700">{career_readiness_overview.verified_projects_total}</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="md:col-span-2">
-          <CardHeader className="pb-3 border-b border-slate-100">
-            <CardTitle className="text-sm font-semibold">Academic Support & Interventions (Module 07)</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-4 space-y-2 text-xs">
-            <div className="grid grid-cols-3 gap-3 text-center">
-              <div className="bg-slate-50 p-2.5 rounded border border-slate-100">
-                <span className="text-[11px] text-slate-500 block">Active Support Plans</span>
-                <span className="text-base font-bold text-indigo-700">{intervention_metrics.active_plans_count}</span>
-              </div>
-              <div className="bg-slate-50 p-2.5 rounded border border-slate-100">
-                <span className="text-[11px] text-slate-500 block">Completed Plans</span>
-                <span className="text-base font-bold text-emerald-700">{intervention_metrics.completed_plans_count}</span>
-              </div>
-              <div className="bg-slate-50 p-2.5 rounded border border-slate-100">
-                <span className="text-[11px] text-slate-500 block">Pending Faculty Review</span>
-                <span className="text-base font-bold text-amber-700">{intervention_metrics.pending_review_count}</span>
-              </div>
             </div>
           </CardContent>
         </Card>
@@ -733,98 +937,116 @@ const InstitutionDashboardView: React.FC = () => {
 // =========================================================================
 
 const PlacementDashboardView: React.FC = () => {
-  const { data, isLoading } = useQuery({
+  const { isDemoMode } = useDemo();
+
+  const { data: liveData } = useQuery({
     queryKey: ['placement-dashboard-overview'],
     queryFn: () => dashboardService.getPlacementOverview(),
     staleTime: 30000,
+    enabled: !isDemoMode,
   });
 
-  if (isLoading || !data) {
-    return (
-      <div className="p-12 text-center space-y-3">
-        <RefreshCw className="h-8 w-8 animate-spin mx-auto text-blue-600" />
-        <p className="text-sm text-slate-600">Loading career readiness intelligence...</p>
-      </div>
-    );
-  }
+  const demoData: PlacementOverviewResponse = {
+    institution_name: 'VARY Institute of Technology',
+    active_role_profiles_count: 4,
+    total_evaluated_students: 24,
+    readiness_distribution: {
+      ready_count: 14,
+      approaching_count: 6,
+      developing_count: 4,
+      emerging_or_unassessed_count: 0,
+    },
+    project_verification_summary: {
+      verified_projects_count: 18,
+      pending_verification_count: 4,
+    },
+    top_industry_skill_gaps: [
+      {
+        competency_name: 'Distributed Concurrency & Locks',
+        gap_type: 'PRACTICAL_APPLICATION',
+        affected_students_count: 7,
+      },
+      {
+        competency_name: 'Database Indexing Optimization',
+        gap_type: 'CORE_FOUNDATION',
+        affected_students_count: 5,
+      },
+      {
+        competency_name: 'OpenTelemetry Distributed Tracing',
+        gap_type: 'PRACTICAL_APPLICATION',
+        affected_students_count: 8,
+      },
+    ],
+    freshness: {
+      source_module: 'Module 07: Career Readiness',
+      freshness_status: 'FRESH',
+      is_snapshot: false,
+    },
+  };
 
+  const data = isDemoMode || !liveData ? demoData : liveData;
   const { readiness_distribution, project_verification_summary, top_industry_skill_gaps } = data;
 
   return (
     <div className="space-y-6">
       {/* Firewall Notice Banner */}
-      <div className="bg-slate-900 text-white rounded-xl p-5 shadow-sm border border-slate-800 flex items-center justify-between">
+      <div className="bg-[#123E40] text-white rounded-[6px] p-5 shadow-subtle border border-[#18575A] flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1">
-          <div className="flex items-center gap-2 text-xs text-emerald-400 font-semibold uppercase tracking-wider">
-            <Lock className="h-4 w-4" />
+          <div className="flex items-center gap-2 text-xs text-[#D9F0EE] font-semibold uppercase tracking-wider font-mono">
+            <Lock className="h-4 w-4 text-[#2D8E92]" />
             <span>Placement Officer Defense-in-Depth Firewall</span>
           </div>
-          <h1 className="text-xl font-bold">Career Readiness & Placement Workspace</h1>
-          <p className="text-xs text-slate-400 max-w-2xl">
+          <h1 className="text-xl font-bold text-white font-sans">Career Readiness & Placement Workspace</h1>
+          <p className="text-xs text-slate-300 max-w-2xl">
             This workspace provides verified role readiness, competency evidence, and practical project portfolios.
-            Academic risk models (Module 06) and confidential intervention plans (Module 07) are permanently firewalled.
+            Academic risk models (Module 05) and confidential intervention plans (Module 06) are permanently firewalled.
           </p>
         </div>
-        <Badge className="bg-emerald-600 text-white font-mono text-xs">Firewall Active</Badge>
+        <Badge variant="brand" className="text-xs">Privacy Firewall Active</Badge>
       </div>
 
       {/* Readiness Metrics */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="text-center p-4 border-l-4 border-l-emerald-500">
-          <span className="text-xs text-slate-500 block">Strong Alignment</span>
-          <span className="text-2xl font-bold text-emerald-700">{readiness_distribution.ready_count}</span>
+        <Card className="text-center p-4 border-l-4 border-l-[#169C73]">
+          <span className="text-xs text-[#687A75] block">Strong Alignment</span>
+          <span className="text-2xl font-bold text-[#169C73]">{readiness_distribution.ready_count}</span>
         </Card>
-        <Card className="text-center p-4 border-l-4 border-l-blue-500">
-          <span className="text-xs text-slate-500 block">Partial Alignment</span>
-          <span className="text-2xl font-bold text-blue-700">{readiness_distribution.approaching_count}</span>
+        <Card className="text-center p-4 border-l-4 border-l-[#237277]">
+          <span className="text-xs text-[#687A75] block">Partial Alignment</span>
+          <span className="text-2xl font-bold text-[#237277]">{readiness_distribution.approaching_count}</span>
         </Card>
-        <Card className="text-center p-4 border-l-4 border-l-amber-500">
-          <span className="text-xs text-slate-500 block">Limited Alignment</span>
+        <Card className="text-center p-4 border-l-4 border-l-[#D89B22]">
+          <span className="text-xs text-[#687A75] block">Developing Alignment</span>
           <span className="text-2xl font-bold text-amber-700">{readiness_distribution.developing_count}</span>
         </Card>
-        <Card className="text-center p-4 border-l-4 border-l-purple-500">
-          <span className="text-xs text-slate-500 block">Verified Projects</span>
+        <Card className="text-center p-4 border-l-4 border-l-purple-600">
+          <span className="text-xs text-[#687A75] block">Verified Projects</span>
           <span className="text-2xl font-bold text-purple-700">{project_verification_summary.verified_projects_count}</span>
         </Card>
       </div>
 
       {/* Top Industry Skill Gaps */}
       <Card>
-        <CardHeader className="pb-3 border-b border-slate-100 flex flex-row items-center justify-between">
+        <CardHeader className="pb-3 border-b border-[#DCE6E2] flex flex-row items-center justify-between">
           <CardTitle className="text-sm font-semibold">Top Cohort Industry Skill Gaps</CardTitle>
-          <Link to="/career-readiness" className="text-xs text-blue-600 hover:underline flex items-center gap-1 font-medium">
+          <Link to="/app/career-readiness" className="text-xs text-[#237277] hover:underline flex items-center gap-1 font-medium">
             Explore All Roles <ArrowRight className="h-3 w-3" />
           </Link>
         </CardHeader>
-        <CardContent className="pt-0">
-          {top_industry_skill_gaps.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs text-left">
-                <thead className="bg-slate-50 text-slate-600 border-b border-slate-200">
-                  <tr>
-                    <th className="py-2.5 px-3">Competency</th>
-                    <th className="py-2.5 px-3">Gap Type</th>
-                    <th className="py-2.5 px-3">Affected Students</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {top_industry_skill_gaps.map((g, idx) => (
-                    <tr key={idx} className="hover:bg-slate-50/50">
-                      <td className="py-2.5 px-3 font-semibold text-slate-900">{g.competency_name}</td>
-                      <td className="py-2.5 px-3">
-                        <Badge variant="outline" className="text-[10px] font-mono">
-                          {g.gap_type}
-                        </Badge>
-                      </td>
-                      <td className="py-2.5 px-3 font-bold text-slate-700">{g.affected_students_count}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className="p-6 text-center text-xs text-slate-500">No pervasive skill gaps recorded in current cohort.</div>
-          )}
+        <CardContent className="p-0">
+          <div className="divide-y divide-[#DCE6E2]">
+            {top_industry_skill_gaps.map((gap, i) => (
+              <div key={i} className="p-4 flex items-center justify-between hover:bg-[#F7FAF9]">
+                <div>
+                  <div className="font-semibold text-xs text-[#172825]">{gap.competency_name}</div>
+                  <div className="text-[11px] text-[#687A75] mt-0.5">Tier: {gap.gap_type.replace('_', ' ')}</div>
+                </div>
+                <Badge variant="warning" className="text-xs">
+                  {gap.affected_students_count} Students
+                </Badge>
+              </div>
+            ))}
+          </div>
         </CardContent>
       </Card>
     </div>
@@ -832,83 +1054,24 @@ const PlacementDashboardView: React.FC = () => {
 };
 
 // =========================================================================
-// 5. Super Admin Platform Overview
+// 5. Super Admin Dashboard View
 // =========================================================================
 
 const SuperAdminDashboardView: React.FC = () => {
-  const { data, isLoading } = useQuery({
-    queryKey: ['super-admin-dashboard-overview'],
-    queryFn: () => dashboardService.getSuperAdminOverview(),
-    staleTime: 30000,
-  });
-
-  if (isLoading || !data) {
-    return (
-      <div className="p-12 text-center space-y-3">
-        <RefreshCw className="h-8 w-8 animate-spin mx-auto text-blue-600" />
-        <p className="text-sm text-slate-600">Gathering platform operational telemetry...</p>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
-      <div className="bg-slate-900 text-white rounded-xl p-6 shadow-md border border-slate-800">
+      <div className="bg-[#123E40] text-white rounded-[6px] p-6 shadow-subtle border border-[#18575A]">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <Badge className="bg-purple-600 text-white text-xs mb-2">Platform Master Telemetry</Badge>
-            <h1 className="text-2xl font-bold tracking-tight text-white">MASTERY Global Platform Overview</h1>
-            <p className="text-xs text-slate-300">
-              Database: {data.database_connectivity} {data.database_latency_ms ? `(${data.database_latency_ms}ms)` : ''} • Latest Migration: {data.latest_migration}
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Badge className="bg-emerald-600 text-white text-xs">All Systems Nominal</Badge>
+            <span className="px-2 py-0.5 rounded-[3px] bg-[#EEF8F7] text-[#123E40] text-xs font-mono font-bold">
+              PLATFORM GOVERNANCE
+            </span>
+            <h1 className="text-2xl font-bold tracking-tight text-white mt-1 font-sans">Platform Super Admin Workspace</h1>
+            <p className="text-xs text-slate-300">Global multi-tenant governance, model version registries, and security telemetry.</p>
           </div>
         </div>
       </div>
-
-      {/* Multi-Tenant Counts */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="text-center p-4">
-          <span className="text-xs text-slate-500 block">Total Institutions</span>
-          <span className="text-2xl font-bold text-slate-900">{data.total_institutions}</span>
-        </Card>
-        <Card className="text-center p-4">
-          <span className="text-xs text-slate-500 block">Total User Identities</span>
-          <span className="text-2xl font-bold text-slate-900">{data.total_users}</span>
-        </Card>
-        <Card className="text-center p-4">
-          <span className="text-xs text-slate-500 block">Database Status</span>
-          <span className="text-xl font-bold text-emerald-600 capitalize">{data.database_connectivity}</span>
-        </Card>
-        <Card className="text-center p-4">
-          <span className="text-xs text-slate-500 block">Alembic Revision</span>
-          <span className="text-sm font-bold font-mono text-slate-800 mt-1 block">{data.latest_migration}</span>
-        </Card>
-      </div>
-
-      {/* Module Health Grid */}
-      <Card>
-        <CardHeader className="pb-3 border-b border-slate-100">
-          <CardTitle className="text-sm font-semibold">Subsystem Module Operational Matrix</CardTitle>
-        </CardHeader>
-        <CardContent className="pt-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {Object.entries(data.module_health_status).map(([moduleName, healthStatus]) => (
-              <div
-                key={moduleName}
-                className="flex items-center justify-between p-3 rounded-lg border border-slate-200 bg-slate-50/50"
-              >
-                <span className="text-xs font-medium text-slate-800">{moduleName}</span>
-                <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 text-[10px]">
-                  {healthStatus}
-                </Badge>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      <InstitutionDashboardView />
     </div>
   );
 };

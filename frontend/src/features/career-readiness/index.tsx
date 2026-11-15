@@ -193,31 +193,31 @@ export const CareerReadinessPage: React.FC = () => {
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-16">
       {/* 1. Header Banner */}
-      <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+      <div className="bg-[#123E40] border border-[#18575A] rounded-[6px] p-6 shadow-subtle text-white">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-indigo-600 mb-1">
-              <Sparkles className="w-4 h-4" />
-              <span>Module 08: Career Readiness & Industry Competency Intelligence</span>
+            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#D9F0EE] mb-1 font-mono">
+              <Sparkles className="w-4 h-4 text-[#2D8E92]" />
+              <span>Module 07: Career Readiness & Industry Competency Intelligence</span>
             </div>
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+            <h1 className="text-2xl font-bold text-white tracking-tight font-sans">
               Career Readiness & Skill Gap Intelligence
             </h1>
-            <p className="text-sm text-slate-600 mt-1 max-w-3xl">
+            <p className="text-xs text-slate-300 mt-1 max-w-3xl">
               Deterministic, role-specific alignment between verified academic learning outcomes, topic mastery, and verified practical project evidence.
             </p>
           </div>
           <div className="flex items-center gap-3">
             <button
               onClick={handleCompareAll}
-              className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 transition-colors"
+              className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-[4px] bg-[#EEF8F7] text-[#123E40] hover:bg-[#D9F0EE] border border-[#BDCEC8] transition-colors"
             >
-              <Layers className="w-4 h-4" />
+              <Layers className="w-4 h-4 text-[#237277]" />
               Compare Roles
             </button>
             <button
               onClick={() => setShowProjectModal(true)}
-              className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm transition-colors"
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-[4px] bg-[#237277] text-white hover:bg-[#18575A] shadow-sm transition-colors"
             >
               <FolderGit2 className="w-4 h-4" />
               Submit Practical Project

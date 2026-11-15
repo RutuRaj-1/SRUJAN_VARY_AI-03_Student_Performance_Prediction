@@ -291,14 +291,14 @@ export const AcademicDataPage: React.FC = () => {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <div className="flex items-center gap-3">
-              <span className="inline-flex items-center rounded-md bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 ring-1 ring-inset ring-blue-700/10">
-                Module 03
+              <span className="inline-flex items-center rounded-[3px] bg-[#EEF8F7] px-2.5 py-1 text-xs font-semibold text-[#123E40] border border-[#BDCEC8]">
+                Module 01
               </span>
-              <span className="inline-flex items-center rounded-md bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700">
-                Phase 04 / 11
+              <span className="inline-flex items-center rounded-[3px] bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 border border-slate-200">
+                Academic Data Foundation
               </span>
-              <span className="text-xs text-slate-500 font-mono">
-                {profile?.institution_id ? `Institution: ${profile.institution_id.slice(0, 8)}...` : 'System Mode'}
+              <span className="text-xs text-[#687A75] font-mono">
+                {profile?.institution_id ? `Institution: ${profile.institution_id.slice(0, 8)}...` : 'VARY Institute of Technology'}
               </span>
             </div>
             <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">

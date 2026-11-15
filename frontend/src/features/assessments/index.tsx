@@ -349,27 +349,27 @@ export const AssessmentPage: React.FC = () => {
       {/* ===================================================================== */}
       {/* HEADER SECTION */}
       {/* ===================================================================== */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-sm">
+      <div className="bg-[#123E40] border border-[#18575A] rounded-[6px] p-6 shadow-subtle text-white">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 text-indigo-400 text-sm font-semibold uppercase tracking-wider mb-1">
-              <ShieldCheck className="w-4 h-4" />
-              Module 04: Phase 05/11
+            <div className="flex items-center gap-2 text-[#D9F0EE] text-xs font-semibold uppercase tracking-wider mb-1 font-mono">
+              <ShieldCheck className="w-4 h-4 text-[#2D8E92]" />
+              Module 03: Structured Assessment & Evidence Engine
             </div>
-            <h1 className="text-2xl font-bold text-white tracking-tight">
+            <h1 className="text-2xl font-bold text-white tracking-tight font-sans">
               Intelligent Assessment & Attentiveness Engine
             </h1>
-            <p className="text-slate-400 text-sm mt-1">
+            <p className="text-slate-300 text-xs mt-1">
               Multi-modal question authoring, scheduled test delivery, autosave attempts, rubric grading & observable learning engagement telemetry.
             </p>
           </div>
 
           <div className="flex items-center gap-3">
-            <span className="px-3 py-1 bg-indigo-950 text-indigo-300 border border-indigo-800 rounded-full text-xs font-semibold">
+            <span className="px-2.5 py-1 bg-[#EEF8F7] text-[#123E40] rounded-[3px] text-xs font-semibold border border-[#BDCEC8]">
               Role: {profile?.role || 'STUDENT'}
             </span>
             {isFacultyOrAdmin && (
-              <span className="px-3 py-1 bg-emerald-950 text-emerald-300 border border-emerald-800 rounded-full text-xs font-semibold flex items-center gap-1">
+              <span className="px-2.5 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 rounded-[3px] text-xs font-semibold flex items-center gap-1">
                 <CheckCircle className="w-3.5 h-3.5" /> Faculty Authoring Mode
               </span>
             )}

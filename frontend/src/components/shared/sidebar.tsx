@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -9,200 +9,234 @@ import {
   AlertTriangle,
   Compass,
   Briefcase,
-  Activity,
+  ChevronLeft,
+  ChevronRight,
+  ShieldAlert,
+  BookOpen,
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { useAuth } from '@/context/auth-context';
+import { useDemo } from '@/demo/demo-context';
 import { UserRole } from '@/types/auth';
 
 interface NavItem {
   name: string;
   path: string;
   icon: React.ElementType;
-  badge?: string;
+  moduleNumber?: string;
   allowedRoles?: UserRole[];
+  firewalledFor?: UserRole[];
 }
 
 const mainNav: NavItem[] = [
   {
-    name: 'Dashboard Overview',
-    path: '/',
+    name: 'Unified Dashboard',
+    path: '/app/dashboard',
     icon: LayoutDashboard,
+  },
+  {
+    name: 'Demo Walkthrough',
+    path: '/demo-guide',
+    icon: Compass,
   },
 ];
 
 const moduleNav: NavItem[] = [
   {
     name: 'Academic Data Hub',
-    path: '/academic-data',
+    path: '/app/academic-data',
     icon: Database,
-    badge: 'Module 03',
+    moduleNumber: '01',
     allowedRoles: ['STUDENT', 'FACULTY', 'INSTITUTION_ADMIN', 'SUPER_ADMIN'],
   },
   {
-    name: 'Syllabus & Competency',
-    path: '/syllabus',
+    name: 'AI Syllabus Intelligence',
+    path: '/app/syllabus',
     icon: FileText,
-    badge: 'Module 02',
+    moduleNumber: '02',
     allowedRoles: ['STUDENT', 'FACULTY', 'INSTITUTION_ADMIN', 'SUPER_ADMIN'],
   },
   {
     name: 'Assessment Engine',
-    path: '/assessments',
+    path: '/app/assessments',
     icon: CheckCircle2,
-    badge: 'Module 04',
+    moduleNumber: '03',
     allowedRoles: ['STUDENT', 'FACULTY', 'INSTITUTION_ADMIN', 'SUPER_ADMIN'],
   },
   {
     name: 'Mastery Analytics',
-    path: '/mastery',
+    path: '/app/mastery',
     icon: Award,
-    badge: 'Module 05',
+    moduleNumber: '04',
     allowedRoles: ['STUDENT', 'FACULTY', 'PLACEMENT_OFFICER', 'INSTITUTION_ADMIN', 'SUPER_ADMIN'],
   },
   {
     name: 'Academic Risk Engine',
-    path: '/academic-risk',
+    path: '/app/risk',
     icon: AlertTriangle,
-    badge: 'Module 06',
+    moduleNumber: '05',
     allowedRoles: ['STUDENT', 'FACULTY', 'INSTITUTION_ADMIN', 'SUPER_ADMIN'],
+    firewalledFor: ['PLACEMENT_OFFICER'],
   },
   {
-    name: 'Interventions & Growth',
-    path: '/interventions',
-    icon: Compass,
-    badge: 'Module 07',
+    name: 'Personalized Interventions',
+    path: '/app/interventions',
+    icon: BookOpen,
+    moduleNumber: '06',
     allowedRoles: ['STUDENT', 'FACULTY', 'INSTITUTION_ADMIN', 'SUPER_ADMIN'],
+    firewalledFor: ['PLACEMENT_OFFICER'],
   },
   {
-    name: 'Career & Placement',
-    path: '/career-readiness',
+    name: 'Career Readiness',
+    path: '/app/career-readiness',
     icon: Briefcase,
-    badge: 'Module 08',
+    moduleNumber: '07',
     allowedRoles: ['STUDENT', 'PLACEMENT_OFFICER', 'FACULTY', 'INSTITUTION_ADMIN', 'SUPER_ADMIN'],
   },
 ];
 
-const systemNav: NavItem[] = [
-  {
-    name: 'System Diagnostics',
-    path: '/diagnostics',
-    icon: Activity,
-    allowedRoles: ['SUPER_ADMIN', 'INSTITUTION_ADMIN'],
-  },
-];
-
 export const Sidebar: React.FC = () => {
-  const { role } = useAuth();
+  const { role: authRole } = useAuth();
+  const { isDemoMode, activeRole } = useDemo();
+  const [collapsed, setCollapsed] = useState(false);
+
+  const effectiveRole = isDemoMode ? activeRole : authRole;
 
   const isAllowed = (item: NavItem): boolean => {
+    if (item.firewalledFor && item.firewalledFor.includes(effectiveRole)) {
+      return false;
+    }
     if (!item.allowedRoles || item.allowedRoles.length === 0) return true;
-    if (role === 'SUPER_ADMIN') return true;
-    return item.allowedRoles.includes(role);
+    if (effectiveRole === 'SUPER_ADMIN') return true;
+    return item.allowedRoles.includes(effectiveRole);
   };
 
-  const visibleModules = moduleNav.filter(isAllowed);
-  const visibleSystem = systemNav.filter(isAllowed);
-
   return (
-    <aside className="w-64 bg-slate-900 text-slate-300 flex flex-col shrink-0 min-h-[calc(100vh-4rem)] border-r border-slate-800">
-      <div className="flex-1 py-4 px-3 space-y-6 overflow-y-auto">
+    <aside
+      className={cn(
+        'bg-white border-r border-[#DCE6E2] flex flex-col transition-all duration-200 z-20 select-none',
+        collapsed ? 'w-16' : 'w-64'
+      )}
+    >
+      {/* Navigation Groups */}
+      <div className="flex-1 overflow-y-auto py-4 px-2 space-y-6">
         {/* Core Nav */}
         <div>
-          <div className="px-3 mb-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-            Workspace
-          </div>
-          <div className="space-y-1">
-            {mainNav.map((item) => (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                end={item.path === '/'}
-                className={({ isActive }) =>
-                  cn(
-                    'flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
-                    isActive
-                      ? 'bg-blue-600 text-white shadow-sm'
-                      : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                  )
-                }
-              >
-                <item.icon className="h-4 w-4 shrink-0" />
-                <span>{item.name}</span>
-              </NavLink>
-            ))}
-          </div>
-        </div>
-
-        {/* 7 Modules Nav (Filtered by role) */}
-        <div>
-          <div className="px-3 mb-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wider flex items-center justify-between">
-            <span>Product Domains</span>
-            <span className="text-[10px] text-slate-400 font-mono">
-              {visibleModules.length} Modules
-            </span>
-          </div>
-          <div className="space-y-1">
-            {visibleModules.map((item) => (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                className={({ isActive }) =>
-                  cn(
-                    'flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium transition-colors group',
-                    isActive
-                      ? 'bg-slate-800 text-white'
-                      : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                  )
-                }
-              >
-                <div className="flex items-center gap-3 truncate">
-                  <item.icon className="h-4 w-4 shrink-0 text-slate-400 group-hover:text-white" />
-                  <span className="truncate">{item.name}</span>
-                </div>
-                {item.badge && (
-                  <span className="text-[10px] bg-slate-800 border border-slate-700 text-slate-400 group-hover:text-slate-300 px-1.5 py-0.5 rounded font-mono shrink-0">
-                    {item.badge}
-                  </span>
-                )}
-              </NavLink>
-            ))}
-          </div>
-        </div>
-
-        {/* System & Architecture (Admins only) */}
-        {visibleSystem.length > 0 && (
-          <div>
-            <div className="px-3 mb-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-              Administration
+          {!collapsed && (
+            <div className="px-3 mb-2 text-[10px] font-bold text-[#687A75] uppercase tracking-wider font-mono">
+              Workspace
             </div>
-            <div className="space-y-1">
-              {visibleSystem.map((item) => (
+          )}
+          <nav className="space-y-1">
+            {mainNav.map((item) => {
+              const Icon = item.icon;
+              return (
                 <NavLink
                   key={item.path}
                   to={item.path}
                   className={({ isActive }) =>
                     cn(
-                      'flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                      'flex items-center gap-3 px-3 py-2 rounded-[4px] text-xs font-medium transition-colors',
                       isActive
-                        ? 'bg-slate-800 text-white'
-                        : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                        ? 'bg-[#EEF8F7] text-[#123E40] border-l-2 border-[#237277] font-semibold'
+                        : 'text-[#40524E] hover:bg-[#F7FAF9] hover:text-[#172825]'
                     )
                   }
+                  title={collapsed ? item.name : undefined}
                 >
-                  <item.icon className="h-4 w-4 shrink-0 text-slate-400" />
-                  <span>{item.name}</span>
+                  <Icon className="h-4 w-4 shrink-0 text-[#237277]" />
+                  {!collapsed && <span>{item.name}</span>}
                 </NavLink>
-              ))}
+              );
+            })}
+          </nav>
+        </div>
+
+        {/* Seven Modules Group */}
+        <div>
+          {!collapsed && (
+            <div className="px-3 mb-2 flex items-center justify-between text-[10px] font-bold text-[#687A75] uppercase tracking-wider font-mono">
+              <span>Seven Modules</span>
+              <span className="text-[9px] bg-[#EEF8F7] text-[#237277] px-1 py-0.2 rounded border border-[#BDCEC8]">
+                M01–M07
+              </span>
             </div>
-          </div>
-        )}
+          )}
+          <nav className="space-y-1">
+            {moduleNav.map((item) => {
+              const allowed = isAllowed(item);
+              const Icon = item.icon;
+              const isFirewalled = item.firewalledFor?.includes(effectiveRole);
+
+              if (isFirewalled) {
+                // If firewalled (e.g. Placement Officer accessing Risk), display firewall lock indicator
+                return (
+                  <div
+                    key={item.path}
+                    className="flex items-center gap-3 px-3 py-2 rounded-[4px] text-xs text-slate-400 bg-slate-50/80 cursor-not-allowed opacity-60 border border-dashed border-slate-200"
+                    title="Firewalled: Placement Officers are prohibited from viewing Student Risk predictions."
+                  >
+                    <ShieldAlert className="h-4 w-4 shrink-0 text-amber-600" />
+                    {!collapsed && (
+                      <div className="flex items-center justify-between flex-1">
+                        <span className="line-through">{item.name}</span>
+                        <span className="text-[9px] text-amber-700 bg-amber-50 px-1 py-0.5 rounded font-mono">
+                          Firewall
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+
+              if (!allowed) return null;
+
+              return (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  className={({ isActive }) =>
+                    cn(
+                      'flex items-center gap-3 px-3 py-2 rounded-[4px] text-xs font-medium transition-colors group',
+                      isActive
+                        ? 'bg-[#EEF8F7] text-[#123E40] border-l-2 border-[#237277] font-semibold'
+                        : 'text-[#40524E] hover:bg-[#F7FAF9] hover:text-[#172825]'
+                    )
+                  }
+                  title={collapsed ? `${item.moduleNumber}: ${item.name}` : undefined}
+                >
+                  <Icon className="h-4 w-4 shrink-0 text-[#237277] group-hover:text-[#123E40] transition-colors" />
+                  {!collapsed && (
+                    <div className="flex items-center justify-between flex-1">
+                      <span className="truncate">{item.name}</span>
+                      {item.moduleNumber && (
+                        <span className="text-[10px] font-mono text-[#687A75] bg-[#F7FAF9] px-1 py-0.2 rounded border border-[#DCE6E2]">
+                          M{item.moduleNumber}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </NavLink>
+              );
+            })}
+          </nav>
+        </div>
       </div>
 
-      {/* Footer Info */}
-      <div className="p-4 border-t border-slate-800 text-xs text-slate-400">
-        <p className="font-semibold text-slate-300">Phase 02 / 11</p>
-        <p className="text-[11px] mt-0.5">Supabase Auth & RBAC Active</p>
+      {/* Footer: Collapse button */}
+      <div className="p-3 border-t border-[#DCE6E2] flex items-center justify-between bg-[#F7FAF9]">
+        {!collapsed && (
+          <div className="text-[10px] text-[#687A75] font-mono">
+            VARY · SRUJAN '26
+          </div>
+        )}
+        <button
+          onClick={() => setCollapsed(!collapsed)}
+          className="p-1 rounded-[4px] hover:bg-[#EEF8F7] text-[#687A75] hover:text-[#123E40] ml-auto transition-colors"
+          title={collapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+        >
+          {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+        </button>
       </div>
     </aside>
   );

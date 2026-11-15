@@ -266,10 +266,10 @@ export const AcademicRiskPage: React.FC = () => {
               <ShieldAlert className="h-6 w-6" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                Academic Risk Prediction
-                <span className="text-xs font-medium px-2 py-0.5 rounded bg-red-500/10 text-red-400 border border-red-500/20">
-                  Module 06
+              <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2 font-sans">
+                Academic Risk Prediction Engine
+                <span className="text-xs font-medium px-2 py-0.5 rounded-[3px] bg-[#EEF8F7] text-[#123E40] border border-[#BDCEC8] font-mono">
+                  Module 05
                 </span>
               </h1>
               <p className="text-sm text-muted-foreground mt-0.5">

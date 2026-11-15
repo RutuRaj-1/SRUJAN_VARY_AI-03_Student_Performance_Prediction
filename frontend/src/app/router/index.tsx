@@ -2,6 +2,11 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { RootLayout } from '@/app/layouts/root-layout';
 import { ProtectedRoute } from '@/app/router/protected-route';
 
+// Public Landing Page & Walkthrough Guide
+import { LandingPage } from '@/features/landing/landing-page';
+import { DemoGuidePage } from '@/features/demo-guide/demo-guide-page';
+import { NotFoundPage } from '@/features/not-found/not-found-page';
+
 // Auth Pages
 import { LoginPage } from '@/features/auth/login-page';
 import { RegisterPage } from '@/features/auth/register-page';
@@ -20,6 +25,20 @@ import { CareerReadinessPage } from '@/features/career-readiness';
 import { DiagnosticsPage } from '@/features/diagnostics';
 
 export const router = createBrowserRouter([
+  // Public Landing Page
+  {
+    path: '/',
+    element: <LandingPage />,
+  },
+  {
+    path: '/platform',
+    element: <Navigate to="/" replace />,
+  },
+  {
+    path: '/architecture',
+    element: <Navigate to="/#architecture" replace />,
+  },
+
   // Public Authentication Routes
   {
     path: '/login',
@@ -38,59 +57,34 @@ export const router = createBrowserRouter([
     element: <UnauthorizedPage />,
   },
 
-  // Main Application Shell
+  // Standalone Public Demo Guide in App Shell
   {
-    path: '/',
+    path: '/demo-guide',
     element: <RootLayout />,
     children: [
       {
         index: true,
-        element: <DashboardPage />,
+        element: <DemoGuidePage />,
+      },
+    ],
+  },
+
+  // Main Workspace Application Shell under /app/
+  {
+    path: '/app',
+    element: <RootLayout />,
+    children: [
+      {
+        index: true,
+        element: <Navigate to="/app/dashboard" replace />,
       },
       {
         path: 'dashboard',
-        children: [
-          {
-            path: 'student',
-            element: (
-              <ProtectedRoute allowedRoles={['STUDENT', 'FACULTY', 'INSTITUTION_ADMIN', 'SUPER_ADMIN']}>
-                <DashboardPage />
-              </ProtectedRoute>
-            ),
-          },
-          {
-            path: 'faculty',
-            element: (
-              <ProtectedRoute allowedRoles={['FACULTY', 'INSTITUTION_ADMIN', 'SUPER_ADMIN']}>
-                <DashboardPage />
-              </ProtectedRoute>
-            ),
-          },
-          {
-            path: 'institution',
-            element: (
-              <ProtectedRoute allowedRoles={['INSTITUTION_ADMIN', 'SUPER_ADMIN']}>
-                <DashboardPage />
-              </ProtectedRoute>
-            ),
-          },
-          {
-            path: 'placement',
-            element: (
-              <ProtectedRoute allowedRoles={['PLACEMENT_OFFICER', 'INSTITUTION_ADMIN', 'SUPER_ADMIN', 'FACULTY']}>
-                <DashboardPage />
-              </ProtectedRoute>
-            ),
-          },
-          {
-            path: 'admin',
-            element: (
-              <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'INSTITUTION_ADMIN']}>
-                <DashboardPage />
-              </ProtectedRoute>
-            ),
-          },
-        ],
+        element: (
+          <ProtectedRoute allowedRoles={['STUDENT', 'FACULTY', 'INSTITUTION_ADMIN', 'PLACEMENT_OFFICER', 'SUPER_ADMIN']}>
+            <DashboardPage />
+          </ProtectedRoute>
+        ),
       },
       {
         path: 'academic-data',
@@ -125,12 +119,16 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: 'academic-risk',
+        path: 'risk',
         element: (
           <ProtectedRoute allowedRoles={['STUDENT', 'FACULTY', 'INSTITUTION_ADMIN', 'SUPER_ADMIN']}>
             <AcademicRiskPage />
           </ProtectedRoute>
         ),
+      },
+      {
+        path: 'academic-risk',
+        element: <Navigate to="/app/risk" replace />,
       },
       {
         path: 'interventions',
@@ -156,10 +154,58 @@ export const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
-      {
-        path: '*',
-        element: <Navigate to="/" replace />,
-      },
     ],
+  },
+
+  // Backward-Compatible Top-Level Direct Route Redirects
+  {
+    path: '/dashboard',
+    element: <Navigate to="/app/dashboard" replace />,
+  },
+  {
+    path: '/dashboard/*',
+    element: <Navigate to="/app/dashboard" replace />,
+  },
+  {
+    path: '/academic-data',
+    element: <Navigate to="/app/academic-data" replace />,
+  },
+  {
+    path: '/syllabus',
+    element: <Navigate to="/app/syllabus" replace />,
+  },
+  {
+    path: '/assessments',
+    element: <Navigate to="/app/assessments" replace />,
+  },
+  {
+    path: '/mastery',
+    element: <Navigate to="/app/mastery" replace />,
+  },
+  {
+    path: '/academic-risk',
+    element: <Navigate to="/app/risk" replace />,
+  },
+  {
+    path: '/risk',
+    element: <Navigate to="/app/risk" replace />,
+  },
+  {
+    path: '/interventions',
+    element: <Navigate to="/app/interventions" replace />,
+  },
+  {
+    path: '/career-readiness',
+    element: <Navigate to="/app/career-readiness" replace />,
+  },
+  {
+    path: '/diagnostics',
+    element: <Navigate to="/app/diagnostics" replace />,
+  },
+
+  // 404 Catch-All
+  {
+    path: '*',
+    element: <NotFoundPage />,
   },
 ]);
